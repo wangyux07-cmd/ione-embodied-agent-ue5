@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+Saved/
+Intermediate/
+DerivedDataCache/
+Binaries/
+*.sln
+.vs/
+.idea/
+.env
+.env.*
+*.log

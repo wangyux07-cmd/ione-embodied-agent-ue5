@@ -1,0 +1,25 @@
+#ifndef ASTER_SCAN_DISSOLVE
+#define ASTER_SCAN_DISSOLVE
+
+// Custom Material Expression output: x=visibility, y=edge, z=scanline, w=combined emissive mask.
+float4 AsterScanDissolve(
+    float2 UV,
+    float Time,
+    float DissolveAmount,
+    float EdgeWidth,
+    float ScanDensity,
+    float ScanSpeed,
+    float Noise)
+{
+    const float threshold = saturate(DissolveAmount);
+    const float signedMask = Noise - threshold;
+    const float visibility = smoothstep(-fwidth(signedMask), fwidth(signedMask), signedMask);
+    const float safeWidth = max(EdgeWidth, 0.0001);
+    const float edge = 1.0 - saturate(abs(signedMask) / safeWidth);
+    const float scanPhase = UV.y * max(ScanDensity, 1.0) - Time * ScanSpeed;
+    const float scanline = pow(saturate(0.5 + 0.5 * sin(scanPhase * 6.2831853)), 10.0);
+    const float emissive = saturate(edge + scanline * visibility * 0.35);
+    return float4(visibility, edge, scanline, emissive);
+}
+
+#endif

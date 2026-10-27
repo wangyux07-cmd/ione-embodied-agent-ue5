@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111b">
+  <title>Aster Performance Lab</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="identity">
+        <span class="sigil" aria-hidden="true"></span>
+        <div>
+          <h1>Aster Performance Lab</h1>
+          <p>UE5 semantic performance vertical slice</p>
+        </div>
+      </div>
+      <div class="runtime-state"><span id="stateDot"></span><b id="runtimeState">Idle</b><em>web surrogate · UE assets pending PIE</em></div>
+    </header>
+
+    <main class="console">
+      <aside class="rail world-rail" aria-label="Scene state">
+        <section>
+          <h2>Scene</h2>
+          <label class="select-wrap">
+            <span>Evaluation case</span>
+            <select id="sceneSelect"></select>
+          </label>
+          <dl id="worldState" class="state-list"></dl>
+        </section>
+        <section>
+          <h2>Authored constraints</h2>
+          <div id="constraints" class="tag-list"></div>
+        </section>
+        <section class="engine-contract">
+          <h2>UE execution</h2>
+          <ul>
+            <li><span>Body</span><b>Anim Montage</b></li>
+            <li><span>Accent</span><b>Niagara</b></li>
+            <li><span>Material</span><b>Custom HLSL</b></li>
+            <li><span>Cancel</span><b>FTimerManager</b></li>
+          </ul>
+        </section>
+      </aside>
+
+      <section class="stage" aria-label="Aster character stage">
+        <div class="stage-grid" aria-hidden="true"></div>
+        <div class="moon-mark" aria-hidden="true"></div>
+        <img class="aster" id="aster" src="../Content/Character/Concept/Aster_KeyArt_v2.png" alt="Aster, an anime-styled archive researcher">
+        <div class="semantic-orbit" id="semanticOrbit" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="scanline" id="scanline" aria-hidden="true"></div>
+        <div class="caption" id="caption">
+          <span>Aster</span>
+          <p id="dialogue">Select a scene, then run a strategy.</p>
+        </div>
+        <div class="character-meta">
+          <span>Archivist / field researcher</span>
+          <b>calm · precise · interruptible</b>
+        </div>
+      </section>
+
+      <aside class="rail plan-rail" aria-label="Performance plan">
+        <section>
+          <h2>Planner</h2>
+          <div class="strategy-tabs" role="radiogroup" aria-label="Performance strategy">
+            <button data-strategy="A" role="radio" aria-checked="false"><span>A</span>Flat tag</button>
+            <button data-strategy="B" role="radio" aria-checked="false"><span>B</span>Rhythm</button>
+            <button data-strategy="C" class="active" role="radio" aria-checked="true"><span>C</span>Semantic</button>
+          </div>
+        </section>
+        <section class="utterance">
+          <h2>Player</h2>
+          <p id="playerLine"></p>
+        </section>
+        <section>
+          <div class="section-heading"><h2>Performance plan</h2><span id="planCount">0 events</span></div>
+          <ol id="planList" class="plan-list"></ol>
+        </section>
+        <section class="telemetry">
+          <h2>Constraint check</h2>
+          <p id="constraintResult"><i></i>Waiting for a plan</p>
+          <div><span>Policy</span><b id="policyValue">—</b></div>
+          <div><span>Pending timers</span><b id="timerValue">0</b></div>
+        </section>
+      </aside>
+    </main>
+
+    <footer class="transport">
+      <div class="timeline-wrap">
+        <div class="time-labels"><span>0.0</span><span>1.0</span><span>2.0</span><span>3.0</span><span>4.0 s</span></div>
+        <div class="timeline" id="timeline"><div class="playhead" id="playhead"></div></div>
+      </div>
+      <div class="controls">
+        <button id="resetButton" class="quiet">Reset</button>
+        <button id="playButton" class="primary"><span>▶</span>Run plan</button>
+        <button id="interruptButton" class="interrupt"><span>■</span>Player interrupt</button>
+      </div>
+    </footer>
+  </div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

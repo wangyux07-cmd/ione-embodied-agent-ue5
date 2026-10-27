@@ -1,0 +1,20 @@
+[
+  {"id":"open_palm_explain","functions":["explain"],"duration_ms":1450,"policy":"soft_cancel","blocked":[],"intensity":0.45},
+  {"id":"enumerate_small","functions":["explain","enumerate"],"duration_ms":1300,"policy":"soft_cancel","blocked":["holding_object"],"intensity":0.40},
+  {"id":"indicate_left","functions":["indicate_left","direct"],"duration_ms":1150,"policy":"soft_cancel","blocked":["holding_object"],"intensity":0.55},
+  {"id":"indicate_right","functions":["indicate_right","direct"],"duration_ms":1150,"policy":"soft_cancel","blocked":["holding_object"],"intensity":0.55},
+  {"id":"indicate_east","functions":["indicate_east","warn"],"duration_ms":1500,"policy":"soft_cancel","blocked":["holding_object"],"intensity":0.62},
+  {"id":"invite_follow","functions":["invite_follow"],"duration_ms":1750,"policy":"finish_phrase","blocked":["path_blocked"],"intensity":0.58},
+  {"id":"small_nod","functions":["acknowledge","confirm"],"duration_ms":720,"policy":"immediate","blocked":[],"intensity":0.32},
+  {"id":"reassure_open_palm","functions":["reassure","offer_help"],"duration_ms":1600,"policy":"soft_cancel","blocked":["holding_object"],"intensity":0.48},
+  {"id":"firm_refusal","functions":["refuse","boundary"],"duration_ms":1250,"policy":"finish_phrase","blocked":[],"intensity":0.52},
+  {"id":"warning_hold","functions":["warn"],"duration_ms":980,"policy":"immediate","blocked":["holding_object"],"intensity":0.68},
+  {"id":"step_back_guarded","functions":["warn","boundary"],"duration_ms":1350,"policy":"soft_cancel","blocked":["seated"],"intensity":0.70},
+  {"id":"think_chin","functions":["think","recall"],"duration_ms":1450,"policy":"soft_cancel","blocked":["holding_object"],"intensity":0.38},
+  {"id":"uncertain_tilt","functions":["uncertain"],"duration_ms":1050,"policy":"immediate","blocked":[],"intensity":0.34},
+  {"id":"restrained_relief","functions":["relief"],"duration_ms":1350,"policy":"soft_cancel","blocked":[],"intensity":0.42},
+  {"id":"concern_focus","functions":["concern","warn"],"duration_ms":1200,"policy":"soft_cancel","blocked":[],"intensity":0.48},
+  {"id":"frustration_restrained","functions":["frustration"],"duration_ms":1100,"policy":"finish_phrase","blocked":[],"intensity":0.44},
+  {"id":"greet_small","functions":["greet"],"duration_ms":1200,"policy":"immediate","blocked":["holding_object"],"intensity":0.46},
+  {"id":"beat_small","functions":["rhythm_fallback"],"duration_ms":700,"policy":"soft_cancel","blocked":[],"intensity":0.30}
+]

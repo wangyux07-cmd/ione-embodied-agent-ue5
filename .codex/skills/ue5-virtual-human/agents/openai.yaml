@@ -1,0 +1,4 @@
+interface:
+  display_name: "UE5 Virtual Human"
+  short_description: "Build authored, interruptible UE5 NPC performances"
+  default_prompt: "Build an Unreal-native virtual-human feature with designer control and truthful validation boundaries."

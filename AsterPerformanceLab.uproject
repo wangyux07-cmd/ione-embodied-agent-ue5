@@ -1,0 +1,17 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "",
+  "Category": "Research",
+  "Description": "UE5-first prototype for authorable, interruptible NPC performance.",
+  "Modules": [
+    {
+      "Name": "AsterPerformanceLab",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ],
+  "Plugins": [
+    { "Name": "AsterPerformanceRuntime", "Enabled": true },
+    { "Name": "Niagara", "Enabled": true }
+  ]
+}

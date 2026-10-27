@@ -1,0 +1,20 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "0.1.0",
+  "FriendlyName": "Aster Semantic Performance Runtime",
+  "Description": "Designer-authorable semantic gesture planning and deterministic interruption for game NPCs.",
+  "Category": "AI",
+  "CreatedBy": "Independent research prototype",
+  "CanContainContent": true,
+  "Modules": [
+    {
+      "Name": "AsterPerformanceRuntime",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ],
+  "Plugins": [
+    { "Name": "Niagara", "Enabled": true }
+  ]
+}
