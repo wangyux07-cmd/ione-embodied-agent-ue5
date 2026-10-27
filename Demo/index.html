@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#07111b">
-  <title>Aster Performance Lab</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Ione · The Last Frequency</title>
+  <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
   <div class="shell">
@@ -13,21 +13,18 @@
       <div class="identity">
         <span class="sigil" aria-hidden="true"></span>
         <div>
-          <h1>Aster Performance Lab</h1>
-          <p>UE5 semantic performance vertical slice</p>
+          <h1>The Last Frequency</h1>
+          <p>The flooded archive</p>
         </div>
       </div>
-      <div class="runtime-state"><span id="stateDot"></span><b id="runtimeState">Idle</b><em>web surrogate · UE assets pending PIE</em></div>
+      <div class="runtime-state"><span id="stateDot"></span><b id="runtimeState">Idle</b><em>Concept demo · UE assets pending PIE</em></div>
+      <button id="devToggle" class="dev-toggle" aria-expanded="false" aria-controls="worldRail planRail">Developer view</button>
     </header>
 
     <main class="console">
-      <aside class="rail world-rail" aria-label="Scene state">
+      <aside class="rail world-rail" id="worldRail" aria-label="Scene state">
         <section>
           <h2>Scene</h2>
-          <label class="select-wrap">
-            <span>Evaluation case</span>
-            <select id="sceneSelect"></select>
-          </label>
           <dl id="worldState" class="state-list"></dl>
         </section>
         <section>
@@ -45,23 +42,23 @@
         </section>
       </aside>
 
-      <section class="stage" aria-label="Aster character stage">
+      <section class="stage" aria-label="Ione character stage">
         <div class="stage-grid" aria-hidden="true"></div>
         <div class="moon-mark" aria-hidden="true"></div>
-        <img class="aster" id="aster" src="../Content/Character/Concept/Aster_KeyArt_v2.png" alt="Aster, an anime-styled archive researcher">
+        <img class="aster" id="aster" src="../Content/Character/Concept/Ione_ResonanceFork_Concept_v1.png" alt="Ione, archive restorer with an ear-mounted resonance fork">
         <div class="semantic-orbit" id="semanticOrbit" aria-hidden="true"><i></i><i></i><i></i></div>
         <div class="scanline" id="scanline" aria-hidden="true"></div>
         <div class="caption" id="caption">
-          <span>Aster</span>
-          <p id="dialogue">Select a scene, then run a strategy.</p>
+          <span>Ione</span>
+          <p id="dialogue">The eastern bridge is gone. Ask me what you need to know.</p>
         </div>
         <div class="character-meta">
-          <span>Archivist / field researcher</span>
-          <b>calm · precise · interruptible</b>
+          <span>Field restorer of lost sounds</span>
+          <b>One record was erased to save a life.</b>
         </div>
       </section>
 
-      <aside class="rail plan-rail" aria-label="Performance plan">
+      <aside class="rail plan-rail" id="planRail" aria-label="Performance plan">
         <section>
           <h2>Planner</h2>
           <div class="strategy-tabs" role="radiogroup" aria-label="Performance strategy">
@@ -69,10 +66,6 @@
             <button data-strategy="B" role="radio" aria-checked="false"><span>B</span>Rhythm</button>
             <button data-strategy="C" class="active" role="radio" aria-checked="true"><span>C</span>Semantic</button>
           </div>
-        </section>
-        <section class="utterance">
-          <h2>Player</h2>
-          <p id="playerLine"></p>
         </section>
         <section>
           <div class="section-heading"><h2>Performance plan</h2><span id="planCount">0 events</span></div>
@@ -88,17 +81,18 @@
     </main>
 
     <footer class="transport">
+      <label class="game-choice"><span>Ask about</span><select id="sceneSelect" aria-label="Choose a question"></select><span id="playerLine" class="player-line"></span></label>
       <div class="timeline-wrap">
         <div class="time-labels"><span>0.0</span><span>1.0</span><span>2.0</span><span>3.0</span><span>4.0 s</span></div>
         <div class="timeline" id="timeline"><div class="playhead" id="playhead"></div></div>
       </div>
       <div class="controls">
         <button id="resetButton" class="quiet">Reset</button>
-        <button id="playButton" class="primary"><span>▶</span>Run plan</button>
-        <button id="interruptButton" class="interrupt"><span>■</span>Player interrupt</button>
+        <button id="playButton" class="primary"><span>▶</span>Ask Ione</button>
+        <button id="interruptButton" class="interrupt"><span>■</span>Interrupt</button>
       </div>
     </footer>
   </div>
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js?v=3"></script>
 </body>
 </html>

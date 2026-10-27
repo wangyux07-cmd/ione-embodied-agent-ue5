@@ -58,7 +58,7 @@ function renderScene() {
   reset(false);
   state.scene = state.scenes.find((item) => item.id === selectors.scene.value) || state.scenes[0];
   selectors.player.textContent = `“${state.scene.player}”`;
-  selectors.dialogue.textContent = "Select a strategy and run the plan.";
+  selectors.dialogue.textContent = "I'm listening. What do you need to know?";
   selectors.world.innerHTML = [
     ["Category", state.scene.category.replace("_", " ")],
     ["Character", state.scene.state.length ? state.scene.state.join(", ") : "ready"],
@@ -157,7 +157,7 @@ function reset(rebuild = true) {
   document.querySelectorAll(".plan-list li").forEach((node) => node.classList.remove("fired", "cancelled"));
   setRuntime("Idle");
   if (rebuild && state.scene) {
-    selectors.dialogue.textContent = "Select a strategy and run the plan.";
+    selectors.dialogue.textContent = "I'm listening. What do you need to know?";
     renderPlan();
   }
 }
@@ -169,7 +169,7 @@ async function init() {
   ]);
   state.scenes = scenes;
   state.gestures = gestures;
-  selectors.scene.innerHTML = scenes.map((scene) => `<option value="${scene.id}">${scene.id} · ${scene.category.replace("_", " ")}</option>`).join("");
+  selectors.scene.innerHTML = scenes.map((scene) => `<option value="${scene.id}">${scene.player}</option>`).join("");
   selectors.scene.value = "interrupt_01";
   renderScene();
 }
@@ -188,6 +188,11 @@ selectors.scene.addEventListener("change", renderScene);
 $("#playButton").addEventListener("click", play);
 $("#interruptButton").addEventListener("click", interrupt);
 $("#resetButton").addEventListener("click", () => reset(true));
+$("#devToggle").addEventListener("click", () => {
+  const visible = document.body.classList.toggle("developer-view");
+  $("#devToggle").setAttribute("aria-expanded", visible ? "true" : "false");
+  $("#devToggle").textContent = visible ? "Return to game" : "Developer view";
+});
 
 init().catch((error) => {
   selectors.dialogue.textContent = `Demo data could not load: ${error.message}. Run through a local HTTP server.`;

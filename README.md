@@ -4,6 +4,8 @@
 
 The first offline Agent contract is in `Tools/ione_agent.py`. It demonstrates world-state lookup, a consent-gated door tool, an explicit commit boundary, and cancellation of stale turns. It uses a deterministic proposal fixture, not a live LLM. Run `python -m unittest discover -s Tests -v` to verify the contract.
 
+The main `Demo/` page now defaults to a player-facing Ione scene. Select **Developer view** to inspect the older A/B/C performance planner. The Ione concept image is AI-assisted exploration; it is not a 3D asset. See [interface contract](DESIGN.md).
+
 **An Unreal Engine 5-first research prototype for authorable, interruptible game-NPC performance.**
 
 The prototype asks a narrow systems question: can semantic gesture retrieval, designer-authored constraints and a deterministic cancellation boundary improve NPC performance over flat LLM tags and rhythm-only motion—without training a large motion model?

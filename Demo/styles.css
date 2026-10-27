@@ -171,3 +171,37 @@ select { width: 100%; padding: 10px 34px 10px 11px; color: var(--mist); border: 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
 }
+
+/* Player view: the fiction owns the screen. Authoring telemetry is opt-in. */
+.shell { grid-template-rows: 64px minmax(0, 1fr) auto; }
+.console { display: block; position: relative; }
+.stage { min-height: min(68vh, 720px); }
+.world-rail, .plan-rail, .timeline-wrap { display: none; }
+.topbar { background: #101a20; }
+.sigil, .stage-grid, .moon-mark, .semantic-orbit { display: none; }
+.identity p { font-size: 12px; color: #b2b6b4; }
+.runtime-state { display: none; }
+.dev-toggle { border: 1px solid #677074; background: transparent; padding: 8px 12px; cursor: pointer; }
+.dev-toggle:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.stage::after { background: linear-gradient(0deg, rgba(2,8,12,.95), transparent 45%), linear-gradient(90deg, rgba(3,8,12,.38), transparent 45%); }
+.aster { object-position: 50% 36%; }
+.caption { left: clamp(22px, 5vw, 76px); right: 30px; bottom: 36px; border: 0; padding: 0; }
+.caption span { color: #eac497; font-size: 23px; }
+.caption p { font-size: clamp(19px,2vw,28px); max-width: 760px; }
+.character-meta { display: none; top: auto; bottom: 150px; left: clamp(22px,5vw,76px); }
+.character-meta b { font-size: 11px; color: #e6ded2; }
+.transport { grid-template-columns: 1fr auto; gap: 22px; padding: 18px clamp(22px,5vw,76px); background: #101a20; }
+.game-choice { display: grid; grid-template-columns: auto minmax(170px,280px); align-items: center; gap: 4px 12px; }
+.game-choice > span:first-child { color: #c5bca9; }
+.game-choice select { border-radius: 8px; padding: 9px; }
+.player-line { grid-column: 1/-1; color: #d9e2df; }
+.controls .primary { background: #d4b081; border-color: #d4b081; color: #171914; }
+.controls .interrupt { color: #f0d9d2; border-color: #906c67; }
+body.developer-view .console { display: grid; grid-template-columns: minmax(220px,18%) 1fr minmax(280px,23%); }
+body.developer-view .world-rail, body.developer-view .plan-rail { display: block; }
+body.developer-view .timeline-wrap { display: block; }
+body.developer-view .transport { grid-template-columns: 1fr 1fr auto; }
+body.developer-view .character-meta { display: none; }
+body.developer-view .runtime-state { display: grid; margin-left: auto; margin-right: 20px; }
+@media(max-width:1050px){body.developer-view .console { display:block; }body.developer-view .world-rail,body.developer-view .plan-rail { display:none; }body.developer-view .transport{grid-template-columns:1fr auto;}}
+@media(max-width:720px){.topbar{gap:8px}.runtime-state em{display:none}.dev-toggle{font-size:11px}.stage{min-height:70vh}.transport{grid-template-columns:1fr}.controls{display:flex;flex-wrap:wrap}.game-choice{grid-template-columns:1fr}.player-line{grid-column:1}.character-meta{bottom:160px}}
