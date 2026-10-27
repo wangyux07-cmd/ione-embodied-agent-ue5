@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ione Agent Contract · live prototype</title>
+<style>
+body{margin:0;background:#0b1420;color:#e8e5d9;font:16px/1.55 system-ui}main{max-width:1080px;margin:40px auto;padding:24px}h1{font-size:40px;margin:0}p{color:#aeb9bb}.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}.panel{background:#142330;border:1px solid #3b5961;border-radius:16px;padding:22px}button{background:#b9a474;border:0;border-radius:8px;padding:11px 16px;margin:5px;cursor:pointer;color:#101820;font-weight:700}button.secondary{background:#355765;color:white}pre{white-space:pre-wrap;min-height:190px;color:#b8ddd5}.fork{font-size:80px;color:#ad7950;line-height:1}.state{color:#c7e4da}.note{border-left:3px solid #ad7950;padding-left:14px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+</style>
+<main><small>RESEARCH PROTOTYPE · OFFLINE DETERMINISTIC FIXTURE · UE PIE PENDING</small><h1>Ione / The Last Frequency</h1><p>World grounded tool calls, consent gate, stale turn cancellation. The resonance fork reflects agent state.</p>
+<div class="grid"><section class="panel"><div class="fork" id="fork">⋔</div><h2 id="mode">Listening</h2><p>Flooded public archive · east bridge collapsed · west gallery open</p><button id="route">Ask for a route</button><button id="open">Open sealed record</button><button class="secondary" id="interrupt">Interrupt</button><button class="secondary" id="consent">Grant owner consent</button><p class="note">Click Interrupt before Commit to cancel a pending tool. A committed world change cannot be retroactively erased.</p></section>
+<section class="panel"><h2>Agent trace</h2><pre id="trace">Waiting for player input.</pre><button id="commit">Validate & commit tool</button><p id="world">Door: locked · consent: false</p></section></div>
+<p>Baseline A: dialogue only. Baseline B: world and guarded tools. Proposed C: B plus authored performance and interruption. This page currently demonstrates the deterministic Agent contract; live LLM and UE assets are future milestones.</p></main>
+<script>
+let generation=0,active=null,world={door:'locked',consent:false};
+const $=id=>document.getElementById(id);
+function draw(lines){$('trace').textContent=lines.join('\n');$('world').textContent=`Door: ${world.door} · consent: ${world.consent}`;}
+function propose(kind){generation++;active={generation,kind,cancelled:false};$('mode').textContent='Planning';$('fork').style.color='#dfaa61';draw([`Turn ${generation}: player asks ${kind==='route'?'for a safe route':'to open the record'}`,'Proposal: '+(kind==='route'?'inspect_route(east_bridge)':'open_archive_door(archive_door)'),'Pending world validation and commit.']);}
+$('route').onclick=()=>propose('route');$('open').onclick=()=>propose('open');
+$('interrupt').onclick=()=>{generation++;if(active)active.cancelled=true;$('mode').textContent='Listening';$('fork').style.color='#ad7950';draw(['Player interrupted.','Pending tool proposal cancelled.','Old generation can no longer commit.']);};
+$('consent').onclick=()=>{world.consent=true;draw(['Owner consent added to world state.','Ask to open the record again for a fresh proposal.']);};
+$('commit').onclick=()=>{if(!active){draw(['No proposal to commit.']);return}if(active.cancelled||active.generation!==generation){draw(['REJECTED: stale_turn','World remains unchanged.']);return}if(active.kind==='route'){draw(['VALID: inspect_route(east_bridge)','Tool result: collapsed','Ione: The east bridge has collapsed. Use the west gallery.']);}else if(!world.consent){draw(['REJECTED: consent_required','Ione: The record stays sealed until its owner consents.']);}else{world.door='open';draw(['VALID: open_archive_door(archive_door)','Tool result: opened','Memory: archive_door_opened_with_consent']);}active=null;$('mode').textContent='Tool complete';$('fork').style.color='#81d2c7';};
+</script></html>
