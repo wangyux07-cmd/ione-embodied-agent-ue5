@@ -1,10 +1,10 @@
 # Aster Performance Lab
 
-> **Current development direction (2026-10-27):** This repository is being expanded into **Ione: an interruptible, world-grounded UE5 NPC Agent**. The existing Aster web stage and 30-scene performance planner remain an earlier baseline, not evidence that the new LLM Agent or Ione character is complete. See [Version 3 execution and CV evidence plan](Docs/Version3_Agent项目执行与简历交付.md).
+> **Current development direction (2026-10-27):** This repository is being expanded into **Ione: an interruptible, world-grounded UE5 NPC Agent**. The existing Aster web stage and 30-scene performance planner remain an earlier baseline. The selected Ione character now has four front-facing 2D performance poses and a UE actor integration in source; these have **not** been compiled or played in Unreal Editor on this machine. See [Ione UE5 performance and interruption](Docs/Ione_UE5表演与打断.md) and [Version 3 execution and CV evidence plan](Docs/Version3_Agent项目执行与简历交付.md).
 
 The first offline Agent contract is in `Tools/ione_agent.py`. It demonstrates world-state lookup, a consent-gated door tool, an explicit commit boundary, and cancellation of stale turns. It uses a deterministic proposal fixture, not a live LLM. Run `python -m unittest discover -s Tests -v` to verify the contract.
 
-The main `Demo/` page now defaults to a player-facing Ione scene. Select **Developer view** to inspect the older A/B/C performance planner. The Ione concept image is AI-assisted exploration; it is not a 3D asset. See [interface contract](DESIGN.md).
+The `Demo/` page is an older browser visualization with developer controls. The new camera-facing Ione art and performance code target Unreal Engine. The art is AI-assisted original concept exploration, not a 3D rig or a UE `.uasset`.
 
 **An Unreal Engine 5-first research prototype for authorable, interruptible game-NPC performance.**
 
@@ -16,7 +16,7 @@ The prototype asks a narrow systems question: can semantic gesture retrieval, de
 
 The generative layer is not allowed to play animation or change the world directly. It proposes dialogue and semantic anchors. An Unreal runtime plugin validates those anchors, retrieves authored montage definitions from a Data Asset, filters them with Gameplay Tags, schedules animation/VFX, and owns interruption recovery.
 
-- `AAsterNPCActor` packages skeletal mesh, voice, Niagara and the performance component.
+- `AAsterNPCActor` packages skeletal mesh, voice, Niagara, a camera-facing 2D portrait and the performance component.
 - `UAsterSemanticPerformanceComponent` exposes A/B/C planning, Blueprint delegates and deterministic timer cancellation.
 - `UAsterGestureLibrary` is the narrative/animation designer's control surface.
 - `AsterScanDissolve.ush` is a derivative-aware Custom Node include for scan, edge and dissolve masks.
@@ -56,7 +56,8 @@ python -m unittest discover -s .\Tests -v
 Plugins/AsterPerformanceRuntime/  UE runtime plugin and shader include
 Source/                           UE game module
 Config/                           Gameplay Tags and project metadata
-Content/Character/Concept/        original Aster key art (source concept only)
+Content/Character/Concept/        earlier concept exploration
+Content/Character/Performance2D/  selected Ione art and four front-facing poses
 Data/                             18 gestures and 30 fixed scenarios
 Demo/                             interactive browser surrogate
 Tools/                            deterministic evaluation runner
@@ -76,7 +77,8 @@ Reports/                          results, failures and limitations
 | Material Custom HLSL | Source complete; compile pending | shader include and node recipe |
 | Niagara integration | C++ parameters and module specification complete; `.uasset` pending | component code and authoring notes |
 | Unreal project compile / PIE | **Not yet verified** | no Unreal installation on this machine |
-| Rigged 3D character / facial animation | **Not implemented** | key art only |
+| Ione 2D expression/action set | Four PNG poses and UE actor source; PIE pending | `Content/Character/Performance2D/`, `Docs/Ione_UE5表演与打断.md` |
+| Rigged 3D character / continuous facial animation | **Not implemented** | 2D pose switching only |
 | Human pairwise study | **Not run** | questionnaire design remains future work |
 
 ## Honest next milestone

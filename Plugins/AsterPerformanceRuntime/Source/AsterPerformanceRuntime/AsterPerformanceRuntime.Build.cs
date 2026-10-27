@@ -7,7 +7,7 @@ public class AsterPerformanceRuntime : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         PublicDependencyModuleNames.AddRange(new[]
         {
-            "Core", "CoreUObject", "Engine", "GameplayTags", "Json", "JsonUtilities", "Niagara", "Projects", "RenderCore"
+            "Core", "CoreUObject", "Engine", "GameplayTags", "Json", "JsonUtilities", "Niagara", "Projects", "RenderCore", "UMG", "Slate", "SlateCore"
         });
     }
 }

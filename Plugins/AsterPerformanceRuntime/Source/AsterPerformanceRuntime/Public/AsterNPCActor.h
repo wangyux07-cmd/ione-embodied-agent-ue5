@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "TimerManager.h"
 #include "AsterPerformanceTypes.h"
 #include "AsterNPCActor.generated.h"
 
@@ -9,7 +10,18 @@ class UAudioComponent;
 class UNiagaraComponent;
 class USceneComponent;
 class USkeletalMeshComponent;
+class UWidgetComponent;
+class UTexture2D;
 class UAsterSemanticPerformanceComponent;
+
+UENUM(BlueprintType)
+enum class EAsterPortraitPose : uint8
+{
+    Listening,
+    Speaking,
+    Interrupted,
+    Warning
+};
 
 UCLASS(Blueprintable)
 class ASTERPERFORMANCERUNTIME_API AAsterNPCActor : public AActor
@@ -34,6 +46,31 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Aster")
     TObjectPtr<UAsterSemanticPerformanceComponent> Performance;
 
+    /** Camera-facing 2D performance layer. Assign imported PNG textures in a Blueprint subclass. */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Aster|Portrait")
+    TObjectPtr<UWidgetComponent> PortraitWidget;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aster|Portrait")
+    TObjectPtr<UTexture2D> ListeningPortrait;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aster|Portrait")
+    TObjectPtr<UTexture2D> SpeakingPortrait;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aster|Portrait")
+    TObjectPtr<UTexture2D> InterruptedPortrait;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aster|Portrait")
+    TObjectPtr<UTexture2D> WarningPortrait;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aster|Portrait", meta=(ClampMin="0.0"))
+    float IdleBobAmplitudeCm = 2.5f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aster|Portrait", meta=(ClampMin="0.0"))
+    float GestureDisplacementCm = 10.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aster|Portrait", meta=(ClampMin="0.0"))
+    float GestureTiltDegrees = 5.0f;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aster|Runtime")
     EAsterPerformanceStrategy ActiveStrategy = EAsterPerformanceStrategy::Semantic;
 
@@ -43,6 +80,9 @@ public:
     UFUNCTION(BlueprintCallable, Category="Aster|Runtime")
     void PlayerInterrupt(const FString& NewPlayerUtterance);
 
+    UFUNCTION(BlueprintCallable, Category="Aster|Portrait")
+    void SetPortraitPose(EAsterPortraitPose NewPose);
+
     UFUNCTION(BlueprintImplementableEvent, Category="Aster|Events")
     void OnDialogueStarted(const FString& Dialogue);
 
@@ -51,4 +91,21 @@ public:
 
     UFUNCTION(BlueprintImplementableEvent, Category="Aster|Events")
     void OnGameActionRequested(FName ActionId, FName WorldTarget);
+
+protected:
+    virtual void BeginPlay() override;
+    virtual void Tick(float DeltaSeconds) override;
+
+private:
+    UFUNCTION()
+    void HandleGestureStarted(FName GestureId, FName SemanticFunction);
+
+    UFUNCTION()
+    void ResetPortraitToListening();
+
+    FTimerHandle ReturnToListeningTimer;
+    FVector PortraitBaseLocation = FVector::ZeroVector;
+    float PortraitMotionTime = 0.0f;
+    float GesturePulse = 0.0f;
+    EAsterPortraitPose CurrentPortraitPose = EAsterPortraitPose::Listening;
 };
