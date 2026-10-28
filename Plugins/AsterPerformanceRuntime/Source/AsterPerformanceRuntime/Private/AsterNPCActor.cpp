@@ -6,12 +6,14 @@
 #include "Components/SceneComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Components/InputComponent.h"
 #include "Engine/Texture2D.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/PlayerCameraManager.h"
 #include "NiagaraComponent.h"
 #include "TimerManager.h"
+#include "InputCoreTypes.h"
 
 AAsterNPCActor::AAsterNPCActor()
 {
@@ -24,7 +26,7 @@ AAsterNPCActor::AAsterNPCActor()
     CharacterMesh->SetupAttachment(SceneRoot);
 
     VoiceAudio = CreateDefaultSubobject<UAudioComponent>(TEXT("VoiceAudio"));
-    VoiceAudio->SetupAttachment(CharacterMesh, TEXT("head"));
+    VoiceAudio->SetupAttachment(SceneRoot);
     VoiceAudio->bAutoActivate = false;
 
     SemanticVfx = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SemanticVfx"));
@@ -46,11 +48,34 @@ AAsterNPCActor::AAsterNPCActor()
 void AAsterNPCActor::BeginPlay()
 {
     Super::BeginPlay();
+    if (CharacterMesh && CharacterMesh->GetSkeletalMeshAsset())
+    {
+        VoiceAudio->AttachToComponent(CharacterMesh, FAttachmentTransformRules::KeepRelativeTransform, TEXT("head"));
+    }
     PortraitWidget->InitWidget();
     PortraitBaseLocation = PortraitWidget->GetRelativeLocation();
     Performance->OnGestureStarted.AddDynamic(this, &AAsterNPCActor::HandleGestureStarted);
     SetPortraitPose(EAsterPortraitPose::Listening);
+    if (bEnablePortraitDebugKeys)
+    {
+        if (APlayerController* Player = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr)
+        {
+            EnableInput(Player);
+            if (InputComponent)
+            {
+                InputComponent->BindKey(EKeys::One, IE_Pressed, this, &AAsterNPCActor::DemoListening);
+                InputComponent->BindKey(EKeys::Two, IE_Pressed, this, &AAsterNPCActor::DemoSpeaking);
+                InputComponent->BindKey(EKeys::Three, IE_Pressed, this, &AAsterNPCActor::DemoInterrupted);
+                InputComponent->BindKey(EKeys::Four, IE_Pressed, this, &AAsterNPCActor::DemoWarning);
+            }
+        }
+    }
 }
+
+void AAsterNPCActor::DemoListening() { SetPortraitPose(EAsterPortraitPose::Listening); }
+void AAsterNPCActor::DemoSpeaking() { SetPortraitPose(EAsterPortraitPose::Speaking); }
+void AAsterNPCActor::DemoInterrupted() { SetPortraitPose(EAsterPortraitPose::Interrupted); }
+void AAsterNPCActor::DemoWarning() { SetPortraitPose(EAsterPortraitPose::Warning); }
 
 void AAsterNPCActor::Tick(const float DeltaSeconds)
 {

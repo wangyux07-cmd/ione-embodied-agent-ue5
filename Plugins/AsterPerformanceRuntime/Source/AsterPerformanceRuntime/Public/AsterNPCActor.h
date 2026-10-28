@@ -71,6 +71,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aster|Portrait", meta=(ClampMin="0.0"))
     float GestureTiltDegrees = 5.0f;
 
+    /** Test map only: keys 1-4 preview the authored poses; keep disabled in a user build. */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aster|Debug")
+    bool bEnablePortraitDebugKeys = false;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Aster|Runtime")
     EAsterPerformanceStrategy ActiveStrategy = EAsterPerformanceStrategy::Semantic;
 
@@ -102,6 +106,11 @@ private:
 
     UFUNCTION()
     void ResetPortraitToListening();
+
+    void DemoListening();
+    void DemoSpeaking();
+    void DemoInterrupted();
+    void DemoWarning();
 
     FTimerHandle ReturnToListeningTimer;
     FVector PortraitBaseLocation = FVector::ZeroVector;

@@ -2,7 +2,7 @@
 
 ## 当前交付边界
 
-这是一套 **UE5 原生 C++ 2D 立绘表演实现**，而不是已完成的骨骼绑定角色。本机未检测到 Unreal Editor，因此尚未生成 `.uasset`、编译插件或通过 PIE 验收。`Content/Character/Performance2D` 里的 PNG 是透明原画，需导入编辑器后才能显示。普通姿态间以 0.18 秒交叠过渡；被打断时立即换成闭口立绘，保证话轮转移清楚。
+这是一套 **UE5 原生 C++ 2D 立绘表演实现**，不是骨骼绑定角色。2026-10-28 已在 Windows 的 UE 5.8.4 中编译 `AsterPerformanceLabEditor`，导入四张纹理，创建 `BP_IoneNPC` 和 `L_IoneStage`，并在游戏运行窗口验证四个姿态的按键预览。普通姿态以 0.18 秒交叠过渡；打断姿态立即切换。按键预览仅验证视觉状态，不代表对话 Agent 已接入，也不代表 `PlayerInterrupt` 的语义链路已完成 PIE 验收。
 
 ## 四个镜头对视状态
 
@@ -17,10 +17,10 @@
 
 ## 在 UE 编辑器里接通
 
-1. 安装与工程匹配的 UE5，生成工程文件并编译 `AsterPerformanceLabEditor`。目前仓库的 `EngineAssociation` 为空，打开时由本机选择引擎版本。
-2. 启用 Editor Scripting Utilities 与 Python Editor Script Plugin，在 UE Python 控制台运行 `Tools/import_ione_2d_ue.py`。它将四张 PNG 导入 `/Game/Character/Performance2D/`。
-3. 以 `AAsterNPCActor` 创建 `BP_IoneNPC`。在 Details 中把四张纹理分别填入 `ListeningPortrait`、`SpeakingPortrait`、`InterruptedPortrait`、`WarningPortrait`。检查贴图保留 alpha；如边缘发黑，改用适合 UI 的压缩设置并确认材质透明混合。
-4. 把 `BP_IoneNPC` 放到关卡左侧的小台座上。`PortraitWidget` 是世界空间组件，每帧朝向玩家相机；可在 Blueprint 中调整其位置和大小。未配置 Skeletal Mesh 时，这个 Actor 仍可使用 2D 立绘层。
+1. 用 UE 5.8.4 打开 `AsterPerformanceLab.uproject`；`EngineAssociation` 为空时需选择本机引擎。C++ 编译已在本机通过。
+2. 仓库已包含四张导入的 `.uasset`；若需重建，依次运行 `Tools/import_ione_2d_ue.py`、`Tools/create_ione_blueprint_ue.py`、`Tools/create_ione_stage_ue.py`。后两者会保存 Blueprint 和测试关卡。
+3. `BP_IoneNPC` 已绑定 `ListeningPortrait`、`SpeakingPortrait`、`InterruptedPortrait`、`WarningPortrait`，并在 `L_IoneStage` 中站在左侧圆盘上。`PortraitWidget` 是世界空间组件，运行时朝向玩家相机。
+4. 测试关卡里的 Blueprint 启用了仅供开发验收的 `1`–`4` 键姿态预览。对话 UI 应改用 `Perform` / `PlayerInterrupt` 驱动，发布前关闭调试键。
 5. 调用 `Perform(Request)` 开始说话；在玩家开始新话轮的同一帧调用 `PlayerInterrupt(NewUtterance)`。`OnGestureStarted` 会按语义切换 Speaking / Warning；`PlayerInterrupt` 切到 Interrupted 并随后回 Listening。
 
 ## PIE 验收场景

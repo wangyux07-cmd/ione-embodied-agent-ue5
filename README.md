@@ -1,10 +1,10 @@
 # Aster Performance Lab
 
-> **Current development direction (2026-10-27):** This repository is being expanded into **Ione: an interruptible, world-grounded UE5 NPC Agent**. The existing Aster web stage and 30-scene performance planner remain an earlier baseline. The selected Ione character now has four front-facing 2D performance poses and a UE actor integration in source; these have **not** been compiled or played in Unreal Editor on this machine. See [Ione UE5 performance and interruption](Docs/Ione_UE5表演与打断.md) and [Version 3 execution and CV evidence plan](Docs/Version3_Agent项目执行与简历交付.md).
+> **Current development direction (2026-10-28):** This repository is being expanded into **Ione: an interruptible, world-grounded UE5 NPC Agent**. The existing Aster web stage and 30-scene performance planner remain an earlier baseline. The selected Ione has four camera-facing 2D poses, a compiled UE 5.8.4 C++ actor, imported textures, a Blueprint and a runnable test map. The four poses were previewed in a UE game process; a dialogue-driven interruption flow is still pending. See [Ione UE5 performance and interruption](Docs/Ione_UE5表演与打断.md) and [Version 3 execution and CV evidence plan](Docs/Version3_Agent项目执行与简历交付.md).
 
 The first offline Agent contract is in `Tools/ione_agent.py`. It demonstrates world-state lookup, a consent-gated door tool, an explicit commit boundary, and cancellation of stale turns. It uses a deterministic proposal fixture, not a live LLM. Run `python -m unittest discover -s Tests -v` to verify the contract.
 
-The `Demo/` page is an older browser visualization with developer controls. The new camera-facing Ione art and performance code target Unreal Engine. The art is AI-assisted original concept exploration, not a 3D rig or a UE `.uasset`.
+The `Demo/` page is an older browser visualization with developer controls. The new camera-facing Ione art and performance code target Unreal Engine. The art is AI-assisted original concept exploration, imported as UE textures; it is not a 3D rig.
 
 **An Unreal Engine 5-first research prototype for authorable, interruptible game-NPC performance.**
 
@@ -26,6 +26,8 @@ The generative layer is not allowed to play animation or change the world direct
 See [architecture](Docs/architecture.md), [Material/Niagara notes](Docs/material-and-niagara.md), and the [Unreal setup checklist](Docs/unreal-setup.md).
 
 ## Run now
+
+On a UE 5.8.4 Windows machine, open `AsterPerformanceLab.uproject`. It starts in `L_IoneStage`, a functional test map with the character on a small disc. In Play, keys `1`–`4` preview Listening, Speaking, Interrupted and Warning. These keys are enabled only by the test Blueprint and are not the intended player dialogue UI. See [UE test evidence](Reports/ue5_ione_stage/README.md).
 
 The browser version is a **visualization surrogate**, useful for comparing planner behavior before UE assets exist.
 
@@ -76,14 +78,14 @@ Reports/                          results, failures and limitations
 | Interruption transaction design | Implemented in source; UE verification pending | timer cancellation, montage policy, voice/VFX handoff |
 | Material Custom HLSL | Source complete; compile pending | shader include and node recipe |
 | Niagara integration | C++ parameters and module specification complete; `.uasset` pending | component code and authoring notes |
-| Unreal project compile / PIE | **Not yet verified** | no Unreal installation on this machine |
-| Ione 2D expression/action set | Four PNG poses and UE actor source; PIE pending | `Content/Character/Performance2D/`, `Docs/Ione_UE5表演与打断.md` |
+| Unreal project compile / game run | **Verified on UE 5.8.4, Windows, D3D11** | `AsterPerformanceLabEditor` build succeeded; `L_IoneStage` ran in game mode |
+| Ione 2D expression/action set | Four imported textures, Blueprint, and runtime key previews verified | `Content/Character/Performance2D/`, `Reports/ue5_ione_stage/` |
 | Rigged 3D character / continuous facial animation | **Not implemented** | 2D pose switching only |
 | Human pairwise study | **Not run** | questionnaire design remains future work |
 
 ## Honest next milestone
 
-On a UE 5.8 workstation: compile the plugin, author the gesture Data Asset and three representative Montages (`warn`, `reassure`, `indicate`), create the semantic Niagara system, and record one interrupt test in PIE. Only after that should this be described as an Unreal-integrated prototype.
+Next: replace the template test map with an authored wasteland scene and player-facing dialogue UI, connect the dialogue/Agent event stream to `Perform` and `PlayerInterrupt`, then capture an actual semantic interruption test. The current key-driven preview does not validate the full interruption transaction, montage timing, or LLM integration.
 
 ## Research boundaries
 
