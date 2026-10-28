@@ -1,40 +1,37 @@
-# Ione 项目：明天简历与 Cover Letter 可用稿
+# Ione：简历与 HR 沟通证据稿
 
-更新：2026-10-28。只写已经有本机运行证据的工作；招聘版本可按岗位描述再压缩。
+更新：2026-10-28。先完成 [论文方法与实验报告](../Reports/paper_feedback_findings.md)，再写此稿。英文项目条目按现有 CV 的 Background → 两条 Responsibilities → Impact & Results 结构。指标均来自作者编写的离线题和本机 UE 测试，不能解释为玩家体验或生产环境效果。
 
-## 项目定位
+## 可放入英文 CV 的项目条目
 
-**Ione — World-grounded Embodied Agent in Unreal Engine 5.8**
-独立原型：末世档案馆 NPC。玩家用自然语言询问路线或请求开门；本地 LLM 生成结构化意图与表演建议，确定性工具门禁核对世界状态、所有者授权和打断轮次。UE 5.8 已编译运行四姿态正面角色与测试舞台；完整的实时 LLM→UE 对话链路仍待接入。
+**Ione | Independent Game NPC Research Prototype | Oct 2026**
 
-## 可直接放入英文 CV 的项目条目
-
-**Ione | Independent Research Prototype | UE5 Game NPC Agent | Oct 2026**
-
-**Background:** Built a world-grounded, interruptible NPC prototype to test how LLM dialogue proposals can drive game actions and character expression under explicit state and permission rules, informed by research on LLM-driven game NPCs.
+**Background:** Built an original wasteland archivist and an Unreal Engine 5.8 game-NPC prototype to investigate whether function feedback can keep free-form player dialogue, permissioned actions and character expression aligned with authoritative game state.
 
 **Responsibilities**
 
-- **Agent Architecture:** Integrated local Gemma 3 4B with JSON-schema action proposals, world-state tools, owner-consent checks and versioned turn cancellation; kept model text separate from the Python harness's authoritative state commit boundary.
-- **Unreal & Evaluation:** Compiled a UE 5.8 C++/Blueprint character prototype with four in-game portrait poses; designed a resettable 30-scenario A/B/C offline ablation with per-task model output, tool traces and final-state assertions.
+- **Grounded Agent & Experimental Design:** Adapted Rao et al.'s function-return feedback into a local Gemma 3 4B JSON-schema agent. Built route/record/consent-gated tools, turn-version cancellation, tool-authored fact cards and a publication gate; evaluated blind, raw-feedback and anchored replies on reset world snapshots with saved traces and a fresh eight-case verification set.
+- **Unreal Engine Virtual Human:** Art-directed Ione's chibi wasteland design—worn workwear, black-root blonde hair and a single cassette earpiece—and integrated four full-body 2D poses. Compiled an Unreal Engine 5.8 C++/Blueprint actor with a camera-facing world-space portrait, timed cross-fades and interrupt-pose hooks; verified all four in game mode.
 
-**Impact & Results:** On 30 fixed offline scenarios, task completion rose from **12/30 (dialogue only)** to **22/30 (tool-gated)** and **30/30 (tool-gated + cancellation/pose events)**; stale tool calls on eight interrupted cases fell from **8/8 to 0/8**, with **zero unauthorized door openings**. Local Gemma 3 4B full-generation latency was **9.41 s P50 / 15.50 s P95**. Four character poses were verified in UE game mode; the dialogue-to-UE animation loop remains future work.
+**Impact & Results:** In audited offline response tests, target-fact compliance rose from **1/12 to 12/12** on the development set and **3/8 to 8/8** on a fresh verification set; a strict publisher rejected **6/8** unapproved model embellishments in that verification set. Separately, versioned cancellation reduced stale tool attempts from **8/8 to 0/8** in fixed interruption cases. Measured second-pass generation at **10.05 s P50** on the verification set; UE dialogue-to-performance wiring and human ratings remain future work.
 
-The A/B/C results are from an author-written offline benchmark, one trial per task. C emits pose events but does not yet play them from live dialogue in Unreal. Keep this qualifier in any interview explanation even if the CV line is shortened.
+### 中文说明：为什么这两条比旧稿更合适
 
-## Cover Letter 英文段落草稿
+第一条写清论文方法、实际 Agent 分层、权限/回合并发边界、事实锚点和可复现评测，而非笼统“做了 Agent Architecture”。第二条明确写 **Unreal Engine**、原创人物审美决策、2D 全身姿态、C++/Blueprint 的世界空间组件和表演时序；没有冒充 3D 骨骼、口型同步或已连通的实时 LLM→UE 动画。英文长度接近现有 CV 中 IBM / Agent 项目职责的两行半至三行密度；实际换行取决于模板字号和列宽。
 
-Following our discussion about game NPCs, I read [Rao et al.'s ACL 2024 study of LLM-driven Minecraft NPCs](https://arxiv.org/html/2407.03460v1). Their documented failures around missing live game state and unsuccessful tool actions gave me a concrete question to examine in Ione, an independent agent prototype alongside a UE 5.8 character stage. A local LLM proposes structured dialogue and actions, while a deterministic gate checks world state, owner consent and turn validity before committing changes. In a fixed 30-scenario offline comparison, task completion was 12/30 for dialogue only, 22/30 with tool access and 30/30 after adding cancellation; stale tool calls on eight interrupted cases fell from eight to zero. I also compiled the Unreal C++/Blueprint prototype and verified four camera-facing poses in game mode. The live dialogue-to-performance loop is the next integration step.
+## 给 HR 的英文沟通段落（可作为 Cover Letter 核心）
 
-## 给面试官看的证据
+After our conversation about game NPC agents, I read Rao et al.'s [study of LLM-driven Minecraft NPCs](https://arxiv.org/html/2407.03460v1). One concrete idea caught my attention: return the success or failure of a game function to the NPC before it speaks to the player. I tested that mechanism with a small local model in Ione, my Unreal Engine 5.8 virtual-human prototype. Raw tool feedback rarely produced a clear, state-grounded answer in my fixed offline tasks, so I added tool-authored fact cards, versioned action checks and a conservative response gate. On a fresh eight-case verification set, target-fact compliance improved from 3/8 with raw feedback to 8/8 with fact anchoring; the gate rejected six unapproved embellishments. I also designed Ione's visual identity and verified four camera-facing states in the Unreal game renderer. The next step is to connect live dialogue to those states and evaluate the player experience directly.
 
-- [实验方法与结果](../Reports/agent_eval_summary.md)，以及同目录的 12 题、30 题逐题 JSON。
-- [原计划与现状逐项对照](../Reports/agent_plan_gap_audit.md)。
-- [UE 运行截图及限制](../Reports/ue5_ione_stage/README.md)：四姿态、测试场景、引擎版本。
-- `Tools/ione_llm.py`、`Tools/ione_agent.py`、`Tools/eval_ione_llm.py`、`Tests/test_ione_llm.py`。
+## 面试时应主动讲清的证据边界
 
-## 还不能写的表述
+- **论文联系**：论文研究玩家与 NPC 的协作任务；借鉴的是函数回执返回模型、角色背景和受限游戏 API 这部分。事实锚点、发布门禁、回合版本取消是本项目扩展，不能归功于论文。
+- **数字含义**：1/12→12/12 与 3/8→8/8 是目标事实是否在模型回答中说清的规则评分；模型已收到完整事实句，不能说“推理能力提高”。发布后 8/8 属于合同和兜底的结果。8/8→0/8 是离线版本门禁，不是 UE 内流式打断录像。
+- **UE 证据**：[四姿态测试截图](../Reports/ue5_ione_stage/README.md)仅证明引擎编译、素材导入、相机正面显示和按键切换。无玩家对话 UI、原创新关卡完工视频或真人主观偏好数据。
+- **实际代价**：第二次模型生成在新验证题上约 10 秒 P50；作为游戏实时交互仍需优化或流式设计。
 
-- “实现了完整的 UE5 实时 LLM 虚拟人对话”——UI、通信和动作调度尚未端到端接通。
-- “12/12 证明用户体验/生产可靠性”——没有开放式用户测试或独立盲测。
-- “达到真实 3D 角色面部动画效果”——当前是 2D 姿态图切换。
+## 证据入口
+
+- [论文方法与逐轮结论](../Reports/paper_feedback_findings.md)、[原始逐题 JSON](../Reports/fact_anchor_eval.json)、[第一轮逐题 JSON](../Reports/paper_feedback_eval.json)。
+- [旧 30 题 Agent 离线消融](../Reports/agent_eval_summary.md)、[Version 3 计划缺口审计](../Reports/agent_plan_gap_audit.md)。
+- [UE 5.8 游戏窗口四姿态与局限](../Reports/ue5_ione_stage/README.md)、[表演实现说明](Ione_UE5表演与打断.md)。
