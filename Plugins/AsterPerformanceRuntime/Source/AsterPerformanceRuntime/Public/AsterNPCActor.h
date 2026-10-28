@@ -87,6 +87,12 @@ public:
     UFUNCTION(BlueprintCallable, Category="Aster|Portrait")
     void SetPortraitPose(EAsterPortraitPose NewPose);
 
+    UFUNCTION(BlueprintPure, Category="Aster|Portrait")
+    EAsterPortraitPose GetPortraitPose() const { return CurrentPortraitPose; }
+
+    UFUNCTION(BlueprintPure, Category="Aster|Portrait")
+    UTexture2D* GetPortraitTexture() const;
+
     UFUNCTION(BlueprintImplementableEvent, Category="Aster|Events")
     void OnDialogueStarted(const FString& Dialogue);
 

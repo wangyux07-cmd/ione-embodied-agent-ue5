@@ -126,6 +126,17 @@ void AAsterNPCActor::SetPortraitPose(const EAsterPortraitPose NewPose)
     GesturePulse = 1.0f;
 }
 
+UTexture2D* AAsterNPCActor::GetPortraitTexture() const
+{
+    switch (CurrentPortraitPose)
+    {
+    case EAsterPortraitPose::Speaking: return SpeakingPortrait;
+    case EAsterPortraitPose::Interrupted: return InterruptedPortrait;
+    case EAsterPortraitPose::Warning: return WarningPortrait;
+    default: return ListeningPortrait;
+    }
+}
+
 void AAsterNPCActor::HandleGestureStarted(FName /*GestureId*/, FName SemanticFunction)
 {
     const FString Function = SemanticFunction.ToString().ToLower();

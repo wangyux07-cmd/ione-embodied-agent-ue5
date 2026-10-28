@@ -1,6 +1,6 @@
 # Aster Performance Lab
 
-> **Current development direction (2026-10-28):** This repository is being expanded into **Ione: an interruptible, world-grounded UE5 NPC Agent**. The existing Aster web stage and 30-scene performance planner remain an earlier baseline. The selected Ione has four camera-facing 2D poses, a compiled UE 5.8.4 C++ actor, imported textures, a Blueprint and a runnable test map. The four poses were previewed in a UE game process; a dialogue-driven interruption flow is still pending. See [Ione UE5 performance and interruption](Docs/Ione_UE5表演与打断.md) and [Version 3 execution and CV evidence plan](Docs/Version3_Agent项目执行与简历交付.md).
+> **Current development direction (2026-10-28):** This repository is being expanded into **Ione: an interruptible, world-grounded UE5 NPC Agent**. The existing Aster web stage and 30-scene performance planner remain an earlier baseline. Ione now has four camera-facing 2D poses and a playable UE 5.8.4 screen with a hand-drawn wasteland archive, a contact shadow and a game-facing dialogue panel. Natural-language input and the dialogue-driven interruption flow are the next milestone. See [Ione scene design](Docs/Ione_场景视觉设计_v2.md), [UE scene screenshot](Reports/ue5_ione_scene/scene.png), and [Version 3 execution plan](Docs/Version3_Agent项目执行与简历交付.md).
 
 The offline Agent contract is in `Tools/ione_agent.py`; `Tools/ione_llm.py` adds a **real local Ollama model** for structured proposals. The tool gate owns route/record lookup, consent-gated door actions and stale-turn rejection. A 30-case [Agent A/B/C offline evaluation](Reports/agent_eval_summary.md) has per-task traces and a [plan gap audit](Reports/agent_plan_gap_audit.md). The model-to-Unreal dialogue and animation loop is not yet connected. Run `python -m unittest discover -s Tests -v` to verify the contract.
 
@@ -31,7 +31,7 @@ See [architecture](Docs/architecture.md), [Material/Niagara notes](Docs/material
 
 ## Run now
 
-On a UE 5.8.4 Windows machine, open `AsterPerformanceLab.uproject`. It starts in `L_IoneStage`, a functional test map with the character on a small disc. In Play, keys `1`–`4` preview Listening, Speaking, Interrupted and Warning. These keys are enabled only by the test Blueprint and are not the intended player dialogue UI. See [UE test evidence](Reports/ue5_ione_stage/README.md).
+On a UE 5.8.4 Windows machine, open `AsterPerformanceLab.uproject`. It starts in `L_IoneStage`; the game screen shows Ione in the ruined archive with an editable UMG dialogue panel. In Play, keys `1`–`4` preview Listening, Speaking, Interrupted and Warning. These keys are enabled only by the test Blueprint and are not the intended player dialogue UI. See [UE scene evidence](Reports/ue5_ione_scene/scene.png).
 
 The browser version is a **visualization surrogate**, useful for comparing planner behavior before UE assets exist.
 
@@ -93,13 +93,14 @@ Reports/                          results, failures and limitations
 | Niagara integration | C++ parameters and module specification complete; `.uasset` pending | component code and authoring notes |
 | Unreal project compile / game run | **Verified on UE 5.8.4, Windows, D3D11** | `AsterPerformanceLabEditor` build succeeded; `L_IoneStage` ran in game mode |
 | Ione 2D expression/action set | Four imported textures, Blueprint, and runtime key previews verified | `Content/Character/Performance2D/`, `Reports/ue5_ione_stage/` |
+| Ione game-facing scene | **Verified in UE 5.8.4 game mode**; hand-drawn backdrop, contact shadow and UMG dialogue panel | `Reports/ue5_ione_scene/scene.png` |
 | Local LLM Agent and 30-case offline A/B/C | **Verified in Python harness**; C plans pose events, no UE dialogue link | `Tools/eval_ione_abc.py`, `Reports/agent_eval_abc_30.json` |
 | Rigged 3D character / continuous facial animation | **Not implemented** | 2D pose switching only |
 | Human pairwise study | **Not run** | questionnaire design remains future work |
 
 ## Honest next milestone
 
-Next: replace the template test map with an authored wasteland scene and player-facing dialogue UI, connect the dialogue/Agent event stream to `Perform` and `PlayerInterrupt`, then capture an actual semantic interruption test. The current key-driven preview does not validate the full interruption transaction, montage timing, or LLM integration.
+Next: connect natural-language dialogue/Agent events to `Perform` and `PlayerInterrupt`, then capture a real semantic interruption test. The current key-driven preview and game screen do not validate the full interruption transaction, montage timing, or LLM integration.
 
 ## Research boundaries
 
