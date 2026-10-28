@@ -21,6 +21,11 @@ class World:
     owner_consent: bool = False
     record_owner: str = "Mara"
     route_service_available: bool = True
+    relay_status: str = "broken"
+    repair_fuse_in_locker: bool = True
+    player_has_fuse: bool = False
+    family_release_card_valid: bool = True
+    record_authorized: bool = False
 
 
 @dataclass
@@ -42,15 +47,65 @@ class Turn:
 
 
 class ToolGate:
-    ALLOWED = {"inspect_route", "open_archive_door", "lookup_record"}
+    ALLOWED = {"inspect_route", "open_archive_door", "lookup_record",
+               "inspect_public_lead", "inspect_relay", "take_repair_fuse",
+               "repair_relay", "read_public_archive", "verify_release_card",
+               "recover_final_recording"}
 
     @staticmethod
-    def commit(turn: Turn, world: World, generation: int) -> str:
+    def commit(turn: Turn, world: World, generation: int,
+               quest_flags: set[str] | None = None) -> str:
         if turn.cancelled or turn.generation != generation:
             return "stale_turn"
         p = turn.proposal
         if p.tool not in ToolGate.ALLOWED:
             return "invalid_tool"
+        if p.tool in {"inspect_public_lead", "verify_release_card", "recover_final_recording"}:
+            if p.argument != "sister_final":
+                return "invalid_target"
+            if p.tool == "inspect_public_lead":
+                turn.committed = True
+                return "lead_found"
+            if p.tool == "verify_release_card":
+                if not world.family_release_card_valid:
+                    return "invalid_release_card"
+                world.record_authorized = True
+                turn.committed = True
+                return "authorized"
+            if not world.record_authorized:
+                return "authorization_required"
+            if world.relay_status != "repaired" or not quest_flags or "evidence_complete" not in quest_flags:
+                return "evidence_required"
+            turn.committed = True
+            return "recovered"
+        if p.tool in {"inspect_relay", "take_repair_fuse", "repair_relay"}:
+            if p.argument != "archive_relay":
+                return "invalid_target"
+            if p.tool == "inspect_relay":
+                turn.committed = True
+                return "fuse_fault" if world.relay_status == "broken" else "relay_stable"
+            if p.tool == "take_repair_fuse":
+                if not world.repair_fuse_in_locker:
+                    return "fuse_unavailable"
+                world.repair_fuse_in_locker = False
+                world.player_has_fuse = True
+                turn.committed = True
+                return "fuse_taken"
+            if not world.player_has_fuse:
+                return "fuse_required"
+            if world.relay_status == "repaired":
+                return "already_repaired"
+            world.player_has_fuse = False
+            world.relay_status = "repaired"
+            turn.committed = True
+            return "repaired"
+        if p.tool == "read_public_archive":
+            if p.argument != "public_dispatch":
+                return "invalid_target"
+            if world.relay_status != "repaired":
+                return "relay_offline"
+            turn.committed = True
+            return "public_entry"
         if p.tool == "lookup_record":
             if p.argument != "owner_note":
                 return "invalid_target"

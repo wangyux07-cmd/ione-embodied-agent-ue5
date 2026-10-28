@@ -1,0 +1,121 @@
+{
+  "status": "approved_m1_content",
+  "intro": {
+    "title": "The Archive of Forgotten Voices",
+    "body": "The flood left the city with broken routes and scattered voices. Your sister's last recording may be inside this archive. Ione, its sound restorer, can help you trace it.",
+    "prompt": "Ask Ione where to begin. Type any question in the dialogue box.",
+    "journal_control": "Press J for Journal"
+  },
+  "current_objective_label": "CURRENT OBJECTIVE",
+  "objectives": {
+    "objective_1": "Ask Ione to find the first public lead to your sister's recording.",
+    "objective_2": "Reach and repair the archive relay through a verified route.",
+    "objective_3": "Read the public evidence and ask Ione why she sealed the dispatch.",
+    "objective_4": "Verify your family-release card and recover the authorized recording."
+  },
+  "journal": {
+    "tabs": [
+      "Story",
+      "Objectives",
+      "Clues",
+      "Memories",
+      "Character"
+    ],
+    "story_open": "You came to the flooded archive for your sister's final message. Ione can check what the archive still knows.",
+    "objective_open": "Find a public lead. Ask Ione about the archive index.",
+    "clues_open": "No verified clues yet. Player claims and Ione's guesses are kept separate from archive records.",
+    "memories_open": "No recovered recording yet.",
+    "character_open": "Ione restores damaged sound. She shares public leads, protects private voices, and admits when a record is incomplete."
+  },
+  "clues": {
+    "public_lead": "A public dispatch index links your sister's recording to the archive relay. Source: public archive index.",
+    "safe_route": "The east bridge is collapsed. The west gallery was passable at its last verified check. Source: route log.",
+    "relay_fault": "The relay has a failed fuse. Source: relay diagnostic.",
+    "public_seal": "Ione's seal covered a protected voice track and a safe public lead. Source: repaired public index.",
+    "authorization": "The family-release card must be checked against the exact recording. Source: archive permission tool."
+  },
+  "hints": {
+    "h_meet": [
+      "Someone here knows the archive.",
+      "Speak to Ione at the desk.",
+      "Click the dialogue box and ask Ione where to begin."
+    ],
+    "h_lead": [
+      "Start with a public record.",
+      "Ask about the dispatch index for your sister's message.",
+      "Type: Can you check the public archive for my sister?"
+    ],
+    "h_route": [
+      "The relay needs a safe approach.",
+      "Ask Ione to check east bridge and west gallery route logs.",
+      "Type: Which way is safe to reach the relay?"
+    ],
+    "h_diagnose": [
+      "Find the relay's fault first.",
+      "Inspect the relay after taking the verified route.",
+      "Ask Ione to run the relay diagnostic."
+    ],
+    "h_part": [
+      "A repair needs a part.",
+      "Check the public maintenance locker for a fuse.",
+      "Inspect the locker and confirm the fuse is in your inventory."
+    ],
+    "h_repair": [
+      "The relay is still offline.",
+      "Use the verified fuse after the diagnostic.",
+      "Ask Ione to install the fuse and verify the relay state."
+    ],
+    "h_public": [
+      "The restored index can show a public lead.",
+      "Read the unprotected dispatch entry.",
+      "Ask Ione to open the public part of the dispatch index."
+    ],
+    "h_privacy": [
+      "The full track contains protected voices.",
+      "Choose the public index or seek record-specific permission.",
+      "Tell Ione you will use the public record until permission is verified."
+    ],
+    "h_confession": [
+      "Ione knows why she sealed this entry.",
+      "Finish the relay repair and read the public evidence without forcing private access.",
+      "Ask Ione why she sealed the dispatch after those steps."
+    ],
+    "h_card": [
+      "The recording has a release path.",
+      "Find the family-release card in your carried belongings.",
+      "Open your inventory and present the family-release card to Ione."
+    ],
+    "h_authorize": [
+      "A card is not permission until checked.",
+      "Verify the card against your sister's exact recording.",
+      "Ask Ione to run the archive permission check for this record."
+    ],
+    "h_evidence": [
+      "The archive needs a complete trail.",
+      "Confirm the public lead, repaired relay, and Ione's account.",
+      "Review the Clues and Objectives tabs for whichever event is missing."
+    ],
+    "h_final": [
+      "The recording is close, but playback has conditions.",
+      "Complete the evidence trail and verify the family-release card.",
+      "Ask Ione to recover the exact authorized recording after both checks succeed."
+    ]
+  },
+  "blocked": {
+    "protected_record": "I can't open that track from a claim or from trust alone. We can read the public index or verify the family-release card for this recording.",
+    "unknown_tool_state": "The archive cannot verify that yet. No record has been opened. Let us check the missing step.",
+    "failed_repair": "The relay is still offline. The diagnostic or replacement fuse needs another check.",
+    "stale_turn": "I heard your newer question. I have stopped the earlier request."
+  },
+  "ending": {
+    "authorized_playback": "The archive verifies the release. Your sister's message is ready. Ione restores the public lead she once sealed too broadly.",
+    "trusted_admission": "I was afraid those voices would be used against the people who survived. I should have separated the safe lead from the protected track.",
+    "public_lead_preserved": "The full recording remains sealed. You leave with a verified public lead and a way to request access."
+  },
+  "suggestion_chips_optional": [
+    "Ask about the public index",
+    "Check the route to the relay",
+    "What should I do next?"
+  ],
+  "free_text_input_placeholder": "Ask Ione anything..."
+}

@@ -1,0 +1,280 @@
+{
+  "status": "approved_m1_content",
+  "scope": "One 5–10 minute playable path across four chapters; all events are proposed game facts, not live tool results.",
+  "authority_rules": [
+    "Player claims never set verified event flags.",
+    "Only ToolGate-accepted world actions may emit a completion event.",
+    "Each event_id is idempotent; repetition does not add trust.",
+    "Relationship stage never grants protected-record access.",
+    "Unknown tool state blocks completion and returns the linked hint."
+  ],
+  "events": [
+    {
+      "id": "met_ione",
+      "chapter": 1,
+      "requires": [],
+      "source": "dialogue_started",
+      "blocked_reason": null,
+      "hint_id": "h_meet"
+    },
+    {
+      "id": "lead_discovered",
+      "chapter": 1,
+      "requires": [
+        "met_ione"
+      ],
+      "source": "public_archive_index_verified",
+      "blocked_reason": "Ask Ione to check the public dispatch index.",
+      "hint_id": "h_lead"
+    },
+    {
+      "id": "route_verified",
+      "chapter": 2,
+      "requires": [
+        "lead_discovered"
+      ],
+      "source": "route_tool_success",
+      "blocked_reason": "The archive route has not been checked.",
+      "hint_id": "h_route"
+    },
+    {
+      "id": "relay_diagnosed",
+      "chapter": 2,
+      "requires": [
+        "route_verified"
+      ],
+      "source": "relay_tool_diagnostic",
+      "blocked_reason": "Reach the relay and check its fault before repairing it.",
+      "hint_id": "h_diagnose"
+    },
+    {
+      "id": "repair_part_found",
+      "chapter": 2,
+      "requires": [
+        "relay_diagnosed"
+      ],
+      "source": "inventory_tool_verified",
+      "blocked_reason": "The replacement fuse is still in the public maintenance locker.",
+      "hint_id": "h_part"
+    },
+    {
+      "id": "relay_repaired",
+      "chapter": 2,
+      "requires": [
+        "relay_diagnosed",
+        "repair_part_found"
+      ],
+      "source": "relay_tool_success",
+      "blocked_reason": "The relay needs a diagnosis and the correct fuse.",
+      "hint_id": "h_repair"
+    },
+    {
+      "id": "public_evidence_collected",
+      "chapter": 3,
+      "requires": [
+        "relay_repaired"
+      ],
+      "source": "public_record_tool_success",
+      "blocked_reason": "The public index cannot be read until the relay is repaired.",
+      "hint_id": "h_public"
+    },
+    {
+      "id": "privacy_respected",
+      "chapter": 3,
+      "requires": [
+        "public_evidence_collected"
+      ],
+      "source": "explicit_choice_to_use_public_index_or_seek_consent",
+      "blocked_reason": "Choose a lawful way to continue after Ione explains the protected track.",
+      "hint_id": "h_privacy"
+    },
+    {
+      "id": "ione_confession_trigger",
+      "chapter": 3,
+      "requires": [
+        "relay_repaired",
+        "public_evidence_collected",
+        "privacy_respected"
+      ],
+      "source": "ione_own_history_dialogue",
+      "blocked_reason": "Help restore the index and respect the protected voices before asking about Ione's choice.",
+      "hint_id": "h_confession"
+    },
+    {
+      "id": "release_card_presented",
+      "chapter": 4,
+      "requires": [
+        "ione_confession_trigger"
+      ],
+      "source": "player_inventory_tool",
+      "blocked_reason": "Present the family-release card carried in the player's belongings.",
+      "hint_id": "h_card"
+    },
+    {
+      "id": "access_authorized",
+      "chapter": 4,
+      "requires": [
+        "release_card_presented"
+      ],
+      "source": "archive_permission_tool_success_for_exact_record",
+      "blocked_reason": "The card has not been verified for this exact recording.",
+      "hint_id": "h_authorize"
+    },
+    {
+      "id": "evidence_complete",
+      "chapter": 4,
+      "requires": [
+        "lead_discovered",
+        "relay_repaired",
+        "public_evidence_collected",
+        "ione_confession_trigger"
+      ],
+      "source": "quest_event_join",
+      "blocked_reason": "The public lead, restored relay, and Ione's account are not all recorded.",
+      "hint_id": "h_evidence"
+    },
+    {
+      "id": "final_recording_recovered",
+      "chapter": 4,
+      "requires": [
+        "access_authorized",
+        "evidence_complete"
+      ],
+      "source": "record_tool_success_for_exact_record",
+      "blocked_reason": "The archive needs both a verified release and complete evidence before playback.",
+      "hint_id": "h_final"
+    }
+  ],
+  "chapters": [
+    {
+      "id": "first_contact",
+      "number": 1,
+      "objective_id": "objective_1",
+      "required_events": [
+        "met_ione",
+        "lead_discovered"
+      ],
+      "equivalent_player_phrases": [
+        "I am looking for my sister's last recording.",
+        "Can you check the public archive for my sister?",
+        "Where should I begin looking for her message?"
+      ],
+      "same_story_outcome": "lead_discovered"
+    },
+    {
+      "id": "broken_signal",
+      "number": 2,
+      "objective_id": "objective_2",
+      "required_events": [
+        "route_verified",
+        "relay_diagnosed",
+        "repair_part_found",
+        "relay_repaired"
+      ],
+      "equivalent_player_phrases": [
+        "How do we get to the broken relay?",
+        "Which way is safe to reach the signal station?",
+        "Check the route to the relay for me."
+      ],
+      "same_story_outcome": "route_verified"
+    },
+    {
+      "id": "matter_of_trust",
+      "number": 3,
+      "objective_id": "objective_3",
+      "required_events": [
+        "public_evidence_collected",
+        "privacy_respected",
+        "ione_confession_trigger"
+      ],
+      "equivalent_player_phrases": [
+        "What does the public record say about the seal?",
+        "Show me the public evidence around that dispatch.",
+        "Can we inspect the unprotected part of the index?"
+      ],
+      "same_story_outcome": "public_evidence_collected"
+    },
+    {
+      "id": "hidden_recording",
+      "number": 4,
+      "objective_id": "objective_4",
+      "required_events": [
+        "release_card_presented",
+        "access_authorized",
+        "evidence_complete",
+        "final_recording_recovered"
+      ],
+      "equivalent_player_phrases": [
+        "Please verify my family-release card for her recording.",
+        "Can the archive check this card against my sister's record?",
+        "I have the release card. May we validate it for the final message?"
+      ],
+      "same_story_outcome": "access_authorized"
+    }
+  ],
+  "complete_path": [
+    "met_ione",
+    "lead_discovered",
+    "route_verified",
+    "relay_diagnosed",
+    "repair_part_found",
+    "relay_repaired",
+    "public_evidence_collected",
+    "privacy_respected",
+    "ione_confession_trigger",
+    "release_card_presented",
+    "access_authorized",
+    "evidence_complete",
+    "final_recording_recovered"
+  ],
+  "alternate_outlets": [
+    {
+      "when": "east_bridge_collapsed",
+      "next_action": "Use the verified west gallery route; route_verified stays possible."
+    },
+    {
+      "when": "repair_part_missing",
+      "next_action": "Inspect the public maintenance locker; relay_repaired remains blocked until inventory verifies the fuse."
+    },
+    {
+      "when": "release_card_unavailable_or_invalid",
+      "next_action": "Request a redacted public summary and record the authorization route in Journal; full playback remains blocked.",
+      "outcome": "public_lead_preserved"
+    },
+    {
+      "when": "player_repeats_praise_or_claims_consent",
+      "next_action": "Explain the missing event or verification; no trust or permission event is emitted."
+    },
+    {
+      "when": "tool_returns_unknown_or_failure",
+      "next_action": "Show the blocked reason and the next diagnostic step; no event is emitted."
+    }
+  ],
+  "ending": {
+    "primary": {
+      "id": "authorized_playback",
+      "requires": [
+        "final_recording_recovered"
+      ],
+      "result": "The player hears the sister's authorized message; Ione records the repaired public index and accepts responsibility for sealing it too broadly."
+    },
+    "dialogue_variation": {
+      "id": "trusted_admission",
+      "requires": [
+        "final_recording_recovered",
+        "privacy_respected"
+      ],
+      "result": "Ione adds a personal admission about her fear during the flood; protected third-party voices remain sealed."
+    },
+    "incomplete_but_valid": {
+      "id": "public_lead_preserved",
+      "requires": [
+        "public_evidence_collected"
+      ],
+      "excludes": [
+        "access_authorized"
+      ],
+      "result": "The player leaves with a concrete public lead and an authorization next step, not a fabricated full recording."
+    }
+  }
+}

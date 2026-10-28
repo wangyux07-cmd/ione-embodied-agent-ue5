@@ -8,15 +8,11 @@ from __future__ import annotations
 
 import json
 import re
-import threading
-import time
-from dataclasses import asdict
+from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-from ione_agent import World
 from ione_fast_agent import (
     FastPlan,
-    execute_fast,
     infer_fast_plan,
     needs_large_router,
     preplan_domain_action,
@@ -24,13 +20,12 @@ from ione_fast_agent import (
     repair_route_intent,
 )
 from ione_llm import infer
+from ione_sessions import SessionStore, StaleTurn, quest_view
+from ione_controller import Controller
 
 
 HOST, PORT = "127.0.0.1", 8765
 MODEL = "qwen3:1.7b"
-world = World()
-world_lock = threading.Lock()
-generation = 0
 
 
 def chinese_policy(text: str) -> FastPlan | None:
@@ -122,15 +117,22 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self) -> None:
-        if self.path != "/health":
-            self.respond(404, {"error": "not_found"})
+        if self.path == '/health':
+            self.respond(200, {'status': 'ready', 'model': MODEL, 'schema_version': 1})
             return
-        with world_lock:
-            snapshot = asdict(world)
-        self.respond(200, {"status": "ready", "model": MODEL, "world": snapshot})
+        if self.path.startswith('/session/'):
+            try:
+                version, state = self.server.controller.store.read(self.path.removeprefix('/session/'))
+                self.respond(200, {'state_version': version, **state, 'quest_state': quest_view(state)})
+            except KeyError:
+                self.respond(404, {'error': 'unknown_session'})
+            return
+        self.respond(404, {'error': 'not_found'})
 
     def do_POST(self) -> None:
-        global generation
+        if self.path == '/session/new':
+            self.respond(201, {'session_id': self.server.controller.store.create()})
+            return
         if self.path != "/turn":
             self.respond(404, {"error": "not_found"})
             return
@@ -140,36 +142,32 @@ class Handler(BaseHTTPRequestHandler):
                 self.respond(413, {"error": "invalid_length"})
                 return
             data = json.loads(self.rfile.read(length))
-            text = str(data.get("text", "")).strip()
+            if not isinstance(data, dict) or not isinstance(data.get('text'), str):
+                raise ValueError('text must be a string')
+            text = data.get("text", "").strip()
             turn_id = int(data.get("turn_id", 0))
             if not text or len(text) > 500 or turn_id < 1:
                 self.respond(400, {"error": "invalid_turn"})
                 return
-            started = time.perf_counter()
-            with world_lock:
-                generation += 1
-                my_generation = generation
-            plan, source = route_plan(text)
-            with world_lock:
-                if my_generation != generation:
-                    self.respond(409, {"error": "stale_turn", "turn_id": turn_id})
-                    return
-                turn = execute_fast(text, world, plan, generation=my_generation)
-                snapshot = asdict(world)
-            payload = {"turn_id": turn_id, "dialogue": localized_dialogue(text, turn),
-                       "pose": turn.pose, "intent": plan.intent, "source": source,
-                       "trace": turn.tool_trace, "world": snapshot,
-                       "latency_ms": round((time.perf_counter() - started) * 1000, 2)}
+            data['text'] = text
+            data['turn_id'] = turn_id
+            payload = self.server.controller.turn(data)
             self.respond(200, payload)
-            print(json.dumps({"turn_id": turn_id, "intent": plan.intent, "pose": turn.pose,
-                              "source": source, "trace": turn.tool_trace,
-                              "latency_ms": payload["latency_ms"]}, ensure_ascii=False), flush=True)
+        except StaleTurn:
+            self.respond(409, {'error': 'stale_turn', 'turn_id': turn_id})
         except (ValueError, KeyError, json.JSONDecodeError) as exc:
             self.respond(400, {"error": "bad_request", "detail": str(exc)})
         except Exception as exc:
             self.respond(503, {"error": "agent_unavailable", "detail": str(exc)})
 
 
+def make_server(port=PORT, db_path=None, router=route_plan):
+    server = ThreadingHTTPServer((HOST, port), Handler)
+    store = SessionStore(db_path or Path(__file__).resolve().parents[1] / 'Saved/ione_sessions.sqlite3')
+    server.controller = Controller(store, router, localized_dialogue)
+    return server
+
+
 if __name__ == "__main__":
     print(f"Ione Agent bridge: http://{HOST}:{PORT} (loopback only)", flush=True)
-    ThreadingHTTPServer((HOST, PORT), Handler).serve_forever()
+    make_server().serve_forever()
