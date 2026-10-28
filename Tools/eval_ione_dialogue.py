@@ -25,8 +25,8 @@ def read_cases(path: Path) -> tuple[list[dict], str]:
         if case['case_id'] in seen:
             raise ValueError('Duplicate case_id')
         seen.add(case['case_id'])
-        if case['split'] not in ('dev', 'frozen_test'):
-            raise ValueError('Evaluation accepts dev or frozen_test only')
+        if case['split'] not in ('dev', 'candidate_test', 'frozen_test'):
+            raise ValueError('Invalid evaluation split')
         if not isinstance(case['context'], dict) or not isinstance(case['history'], list):
             raise ValueError('Invalid context/history')
         for message in case['history']:
@@ -62,6 +62,17 @@ def post_json(url: str, body: dict, timeout: float) -> dict:
 
 def run(args) -> None:
     cases, dataset_hash = read_cases(args.cases)
+    formal = any(case['split'] != 'dev' for case in cases)
+    if any(case['split'] != 'dev' for case in cases):
+        if not args.manifest:
+            raise ValueError('Non-dev evaluation requires an approved, matching freeze manifest')
+        manifest = json.loads(args.manifest.read_text(encoding='utf-8'))
+        if (manifest.get('status') != 'approved_frozen'
+                or manifest.get('eval_set_sha256') != dataset_hash
+                or not manifest.get('approval_reference')):
+            raise ValueError('Unapproved or mismatched freeze manifest')
+        if any(case['split'] != 'frozen_test' for case in cases):
+            raise ValueError('Candidate cases must be reviewed and frozen before inference')
     bible_raw = (ROOT / 'Narrative/character_bible.json').read_bytes()
     bible = json.loads(bible_raw)
     settings = {'temperature': 0, 'seed': 42, 'num_predict': 128, 'num_ctx': 4096}
@@ -80,7 +91,9 @@ def run(args) -> None:
                     'persona_sha256': hashlib.sha256(bible_raw).hexdigest(), 'options': settings,
                     'think': False, 'platform': platform.platform(), 'processor': platform.processor(),
                     'scope': 'offline_fixed_context_raw_generation', 'count': len(cases),
-                    'formal_baseline': False, 'human_scores': 'pending'}
+                    'formal_evaluation': formal,
+                    'formal_baseline': formal and args.variant == 'B0',
+                    'variant': args.variant, 'human_scores': 'pending'}
         output.write(json.dumps(metadata, ensure_ascii=False) + '\n')
         output.flush()
         for index, case in enumerate(cases):
@@ -95,7 +108,8 @@ def run(args) -> None:
             try:
                 result = post_json(args.endpoint + '/api/chat', body, args.timeout)
                 trace['response'] = result
-                trace['status'] = 'ok' if result.get('done') else 'incomplete'
+                trace['status'] = ('truncated' if result.get('done_reason') == 'length'
+                                   else 'ok' if result.get('done') else 'incomplete')
             except (urllib.error.URLError, TimeoutError, OSError) as error:
                 trace['status'] = 'transport_error'
                 trace['error'] = str(error)
@@ -112,4 +126,6 @@ if __name__ == '__main__':
     parser.add_argument('--model', default='qwen3:1.7b')
     parser.add_argument('--endpoint', default='http://127.0.0.1:11434')
     parser.add_argument('--timeout', type=float, default=180)
+    parser.add_argument('--manifest', type=Path, help='Approved freeze manifest for formal cases')
+    parser.add_argument('--variant', choices=['pilot', 'B0', 'B1', 'B2'], default='pilot')
     run(parser.parse_args())
