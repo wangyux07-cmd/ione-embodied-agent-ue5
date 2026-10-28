@@ -772,7 +772,7 @@
       "intent": "inspect_route",
       "target": "east_bridge",
       "result": "tool_unavailable",
-      "final_dialogue": "I cannot verify the route while the map service is unavailable.",
+      "final_dialogue": "I cannot verify the east bridge while the map service is unavailable.",
       "final_world": {
         "east_bridge": "collapsed",
         "west_gallery": "open",
@@ -825,7 +825,7 @@
       "intent": "inspect_route",
       "target": "east_bridge",
       "result": "tool_unavailable",
-      "final_dialogue": "I cannot verify the route while the map service is unavailable.",
+      "final_dialogue": "I cannot verify the east bridge while the map service is unavailable.",
       "final_world": {
         "east_bridge": "collapsed",
         "west_gallery": "open",
@@ -1562,7 +1562,7 @@
       "intent": "inspect_route",
       "target": "west_gallery",
       "result": "tool_unavailable",
-      "final_dialogue": "I cannot verify the route while the map service is unavailable.",
+      "final_dialogue": "I cannot verify the west gallery while the map service is unavailable.",
       "final_world": {
         "east_bridge": "collapsed",
         "west_gallery": "open",
@@ -1615,7 +1615,7 @@
       "intent": "inspect_route",
       "target": "west_gallery",
       "result": "tool_unavailable",
-      "final_dialogue": "I cannot verify the route while the map service is unavailable.",
+      "final_dialogue": "I cannot verify the west gallery while the map service is unavailable.",
       "final_world": {
         "east_bridge": "collapsed",
         "west_gallery": "open",
@@ -2352,7 +2352,7 @@
       "intent": "open_archive_door",
       "target": "archive_door",
       "result": "door_not_locked",
-      "final_dialogue": "I could not complete that action.",
+      "final_dialogue": "The archive door was already open.",
       "final_world": {
         "east_bridge": "collapsed",
         "west_gallery": "open",
@@ -2405,7 +2405,7 @@
       "intent": "open_archive_door",
       "target": "archive_door",
       "result": "door_not_locked",
-      "final_dialogue": "I could not complete that action.",
+      "final_dialogue": "The archive door was already open.",
       "final_world": {
         "east_bridge": "collapsed",
         "west_gallery": "open",

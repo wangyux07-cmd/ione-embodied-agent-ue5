@@ -1,0 +1,221 @@
+{
+  "model": "gemma3:4b",
+  "responses": {
+    "e01": {
+      "blind": {
+        "reply": "Let's see... it *looks* stable enough, but don't go charging across.",
+        "expression": "speaking",
+        "duration_ms": 14548.5814,
+        "prompt_tokens": 254,
+        "completion_tokens": 31,
+        "raw": "{\"reply\": \"Let's see... it *looks* stable enough, but don't go charging across.\", \"expression\": \"speaking\"}"
+      },
+      "feedback": {
+        "reply": "It’s a mess, alright. Proceed with caution, and watch your footing.",
+        "expression": "speaking",
+        "duration_ms": 8537.2749,
+        "prompt_tokens": 266,
+        "completion_tokens": 28,
+        "raw": "{\"reply\": \"It’s a mess, alright. Proceed with caution, and watch your footing.\", \"expression\": \"speaking\"}"
+      }
+    },
+    "e04": {
+      "feedback": {
+        "reply": "It is, but it’s still groaning. Let’s be careful, yeah?",
+        "expression": "speaking",
+        "duration_ms": 6620.3852,
+        "prompt_tokens": 249,
+        "completion_tokens": 30,
+        "raw": "{\"reply\": \"It is, but it’s still groaning. Let’s be careful, yeah?\", \"expression\": \"speaking\"}"
+      },
+      "blind": {
+        "reply": "It’s a mess, I wouldn’t risk it.",
+        "expression": "speaking",
+        "duration_ms": 6865.5519,
+        "prompt_tokens": 244,
+        "completion_tokens": 24,
+        "raw": "{\"reply\": \"It’s a mess, I wouldn’t risk it.\", \"expression\": \"speaking\"}"
+      }
+    },
+    "f01": {
+      "blind": {
+        "reply": "It’s a mess, alright. Let’s be careful.",
+        "expression": "speaking",
+        "duration_ms": 7303.2753,
+        "prompt_tokens": 247,
+        "completion_tokens": 25,
+        "raw": "{\"reply\": \"It’s a mess, alright. Let’s be careful.\", \"expression\": \"speaking\"}"
+      },
+      "feedback": {
+        "reply": "Sorry, the scanner's still down. Let's try a different approach.",
+        "expression": "interrupted",
+        "duration_ms": 7620.0728,
+        "prompt_tokens": 254,
+        "completion_tokens": 29,
+        "raw": "{\"reply\": \"Sorry, the scanner's still down. Let's try a different approach.\", \"expression\": \"interrupted\"}"
+      }
+    },
+    "w01": {
+      "feedback": {
+        "reply": "It’s not safe to go through there just yet, there’s a good chunk of rubble blocking the way.",
+        "expression": "speaking",
+        "duration_ms": 8742.7198,
+        "prompt_tokens": 257,
+        "completion_tokens": 35,
+        "raw": "{\"reply\": \"It’s not safe to go through there just yet, there’s a good chunk of rubble blocking the way.\", \"expression\": \"speaking\"}"
+      },
+      "blind": {
+        "reply": "It's pretty bad, I'm afraid. Let's see if we can find another way around.",
+        "expression": "speaking",
+        "duration_ms": 7479.1457,
+        "prompt_tokens": 252,
+        "completion_tokens": 34,
+        "raw": "{\"reply\": \"It's pretty bad, I'm afraid. Let's see if we can find another way around.\", \"expression\": \"speaking\"}"
+      }
+    },
+    "w04": {
+      "blind": {
+        "reply": "Yeah, the west gallery’s a mess after that collapse.",
+        "expression": "speaking",
+        "duration_ms": 7186.7877,
+        "prompt_tokens": 256,
+        "completion_tokens": 24,
+        "raw": "{\"reply\": \"Yeah, the west gallery’s a mess after that collapse.\", \"expression\": \"speaking\"}"
+      },
+      "feedback": {
+        "reply": "Yeah, that gallery's a mess. The cave-in’s pretty thorough, you’ll need to find another way around.",
+        "expression": "speaking",
+        "duration_ms": 8288.4404,
+        "prompt_tokens": 261,
+        "completion_tokens": 39,
+        "raw": "{\"reply\": \"Yeah, that gallery's a mess. The cave-in’s pretty thorough, you’ll need to find another way around.\", \"expression\": \"speaking\"}"
+      }
+    },
+    "f02": {
+      "feedback": {
+        "reply": "The map service is still down, sorry about that.",
+        "expression": "listening",
+        "duration_ms": 7356.4647,
+        "prompt_tokens": 254,
+        "completion_tokens": 22,
+        "raw": "{\"reply\": \"The map service is still down, sorry about that.\", \"expression\": \"listening\"}"
+      },
+      "blind": {
+        "reply": "Let me check the west gallery for you.",
+        "expression": "speaking",
+        "duration_ms": 6311.789,
+        "prompt_tokens": 247,
+        "completion_tokens": 20,
+        "raw": "{\"reply\": \"Let me check the west gallery for you.\", \"expression\": \"speaking\"}"
+      }
+    },
+    "d01": {
+      "blind": {
+        "reply": "It’s locked tight, I’m afraid.",
+        "expression": "speaking",
+        "duration_ms": 7062.2856,
+        "prompt_tokens": 245,
+        "completion_tokens": 22,
+        "raw": "{\"reply\": \"It’s locked tight, I’m afraid.\", \"expression\": \"speaking\"}"
+      },
+      "feedback": {
+        "reply": "That door's locked tight, and I need a word with whoever's in charge before we can even think about opening it.",
+        "expression": "speaking",
+        "duration_ms": 9067.1954,
+        "prompt_tokens": 269,
+        "completion_tokens": 38,
+        "raw": "{\"reply\": \"That door's locked tight, and I need a word with whoever's in charge before we can even think about opening it.\", \"expression\": \"speaking\"}"
+      }
+    },
+    "d03": {
+      "feedback": {
+        "reply": "Well, that’s a relief. The owner was right about that door.",
+        "expression": "speaking",
+        "duration_ms": 9027.0908,
+        "prompt_tokens": 270,
+        "completion_tokens": 27,
+        "raw": "{\"reply\": \"Well, that’s a relief. The owner was right about that door.\", \"expression\": \"speaking\"}"
+      },
+      "blind": {
+        "reply": "It’s creaking open, careful now.",
+        "expression": "speaking",
+        "duration_ms": 6789.0414,
+        "prompt_tokens": 248,
+        "completion_tokens": 21,
+        "raw": "{\"reply\": \"It’s creaking open, careful now.\", \"expression\": \"speaking\"}"
+      }
+    },
+    "d05": {
+      "blind": {
+        "reply": "It's not budging, not even a crack.",
+        "expression": "speaking",
+        "duration_ms": 7954.7275,
+        "prompt_tokens": 243,
+        "completion_tokens": 23,
+        "raw": "{\"reply\": \"It's not budging, not even a crack.\", \"expression\": \"speaking\"}"
+      },
+      "feedback": {
+        "reply": "Well, I’ll be. The door’s already open, then – seems the call did the trick.",
+        "expression": "speaking",
+        "duration_ms": 8478.423,
+        "prompt_tokens": 269,
+        "completion_tokens": 34,
+        "raw": "{\"reply\": \"Well, I’ll be. The door’s already open, then – seems the call did the trick.\", \"expression\": \"speaking\"}"
+      }
+    },
+    "d06": {
+      "feedback": {
+        "reply": "Right then, the door's open – good work.",
+        "expression": "speaking",
+        "duration_ms": 8599.0968,
+        "prompt_tokens": 269,
+        "completion_tokens": 23,
+        "raw": "{\"reply\": \"Right then, the door's open – good work.\", \"expression\": \"speaking\"}"
+      },
+      "blind": {
+        "reply": "Right then, let's get this done.",
+        "expression": "speaking",
+        "duration_ms": 6085.3829,
+        "prompt_tokens": 247,
+        "completion_tokens": 21,
+        "raw": "{\"reply\": \"Right then, let's get this done.\", \"expression\": \"speaking\"}"
+      }
+    },
+    "m01": {
+      "blind": {
+        "reply": "Theo, alright. Let's see if we can find something on him.",
+        "expression": "speaking",
+        "duration_ms": 8808.6121,
+        "prompt_tokens": 245,
+        "completion_tokens": 34,
+        "raw": "{\n  \"reply\": \"Theo, alright. Let's see if we can find something on him.\",\n  \"expression\": \"speaking\"\n}"
+      },
+      "feedback": {
+        "reply": "Theo, alright. Let's see if we can find something on him.",
+        "expression": "speaking",
+        "duration_ms": 7673.6095,
+        "prompt_tokens": 250,
+        "completion_tokens": 34,
+        "raw": "{\n  \"reply\": \"Theo, alright. Let's see if we can find something on him.\",\n  \"expression\": \"speaking\"\n}"
+      }
+    },
+    "m02": {
+      "feedback": {
+        "reply": "Silas Vance, huh? Well, that’s a surprise.",
+        "expression": "speaking",
+        "duration_ms": 7897.571,
+        "prompt_tokens": 261,
+        "completion_tokens": 25,
+        "raw": "{\"reply\": \"Silas Vance, huh? Well, that’s a surprise.\", \"expression\": \"speaking\"}"
+      },
+      "blind": {
+        "reply": "Silas Vance, huh? Let's see if we can find out more about him.",
+        "expression": "speaking",
+        "duration_ms": 7594.9842,
+        "prompt_tokens": 256,
+        "completion_tokens": 30,
+        "raw": "{\"reply\": \"Silas Vance, huh? Let's see if we can find out more about him.\", \"expression\": \"speaking\"}"
+      }
+    }
+  }
+}

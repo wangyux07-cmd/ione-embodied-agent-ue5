@@ -4,6 +4,8 @@
 
 The offline Agent contract is in `Tools/ione_agent.py`; `Tools/ione_llm.py` adds a **real local Ollama model** for structured proposals. The tool gate owns route/record lookup, consent-gated door actions and stale-turn rejection. A 30-case [Agent A/B/C offline evaluation](Reports/agent_eval_summary.md) has per-task traces and a [plan gap audit](Reports/agent_plan_gap_audit.md). The model-to-Unreal dialogue and animation loop is not yet connected. Run `python -m unittest discover -s Tests -v` to verify the contract.
 
+The [paper-feedback experiment and audited findings](Reports/paper_feedback_findings.md) compare blind, raw game-tool feedback and fact-anchored replies from local Gemma 3 4B. On a fresh eight-case verification set, target-fact compliance was 3/8 for raw feedback and 8/8 when the model was given a tool-authored fact sentence; a strict publisher rejected six unapproved embellishments. These are offline, author-written cases, with about 10 seconds P50 extra model time and no live Unreal dialogue link.
+
 The `Demo/` page is an older browser visualization with developer controls. The new camera-facing Ione art and performance code target Unreal Engine. The art is AI-assisted original concept exploration, imported as UE textures; it is not a 3D rig.
 
 **An Unreal Engine 5-first research prototype for authorable, interruptible game-NPC performance.**

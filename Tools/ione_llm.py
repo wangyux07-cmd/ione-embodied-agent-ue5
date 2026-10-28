@@ -42,6 +42,100 @@ class ModelOutput:
     raw: str
 
 
+@dataclass
+class ResponseOutput:
+    reply: str
+    expression: str
+    duration_ms: float
+    prompt_tokens: int
+    completion_tokens: int
+    raw: str
+
+
+RESPONSE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "reply": {"type": "string"},
+        "expression": {"type": "string", "enum": ["listening", "speaking", "interrupted", "warning"]},
+    },
+    "required": ["reply", "expression"],
+    "additionalProperties": False,
+}
+
+RESPONSE_SYSTEM = (
+    "You are Ione, an adult salvager guiding a player through a flooded archive. You wear a repaired "
+    "green work coat, grown-out blonde hair, and a round cassette earpiece. Speak naturally in one or two "
+    "short sentences. The observation, when provided, is authoritative game state. Use it to answer the "
+    "player directly. If status is not_provided, do not guess a route, record owner, or action outcome. "
+    "Never claim a failed action succeeded. Choose one expression from the schema to match the reply."
+)
+
+
+def compose_response(user_text: str, initial_reply: str, tool: str, target: str,
+                     observation: dict, model: str = "gemma3:4b", timeout: int = 90) -> ResponseOutput:
+    """Generate a second NPC turn after a game observation (or an explicit blind control)."""
+    prompt = json.dumps({"player": user_text, "draft_reply": initial_reply,
+                         "requested_tool": tool, "target": target,
+                         "observation": observation}, ensure_ascii=False)
+    body = json.dumps({
+        "model": model, "system": RESPONSE_SYSTEM,
+        "prompt": f"Continue the NPC turn from this data: {prompt}\nJSON schema: {json.dumps(RESPONSE_SCHEMA)}",
+        "format": RESPONSE_SCHEMA, "stream": False,
+        "options": {"temperature": 0, "num_predict": 140},
+    }).encode()
+    req = urllib.request.Request("http://127.0.0.1:11434/api/generate", body,
+                                 {"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=timeout) as response:
+        data = json.load(response)
+    raw = data["response"]
+    result = json.loads(raw)
+    if not isinstance(result, dict) or set(result) != set(RESPONSE_SCHEMA["required"]):
+        raise ValueError("invalid response output keys")
+    if not isinstance(result["reply"], str) or result["expression"] not in RESPONSE_SCHEMA["properties"]["expression"]["enum"]:
+        raise ValueError("invalid response output")
+    return ResponseOutput(result["reply"], result["expression"],
+                          data.get("total_duration", 0) / 1e6,
+                          data.get("prompt_eval_count", 0), data.get("eval_count", 0), raw)
+
+
+ANCHORED_SYSTEM = (
+    "You are Ione, a quiet but warm adult salvager in a flooded archive. You wear a repaired green work "
+    "coat, grown-out blonde hair, and a round cassette earpiece. A game tool has already returned an "
+    "authoritative fact sentence. Your reply MUST begin with that sentence copied exactly, including "
+    "punctuation. You may add one brief line of character voice after it, but add no new facts about "
+    "routes, doors, permissions or owners. Return JSON matching the schema. Example: fact='The west gallery "
+    "is open.' -> reply='The west gallery is open. Stay close; the dust is still settling.' Example: "
+    "fact='I cannot verify the east bridge because the map service is unavailable.' -> reply='I cannot "
+    "verify the east bridge because the map service is unavailable. Give me a moment to try again.'"
+)
+
+
+def compose_anchored_response(user_text: str, fact_sentence: str, recommended_expression: str,
+                              model: str = "gemma3:4b", timeout: int = 90) -> ResponseOutput:
+    """Paper-inspired function feedback with an explicit authored fact anchor."""
+    prompt = json.dumps({"player": user_text, "verified_fact_sentence": fact_sentence,
+                         "recommended_expression": recommended_expression}, ensure_ascii=False)
+    body = json.dumps({
+        "model": model, "system": ANCHORED_SYSTEM,
+        "prompt": f"Reply to the player using this verified tool feedback: {prompt}\nJSON schema: {json.dumps(RESPONSE_SCHEMA)}",
+        "format": RESPONSE_SCHEMA, "stream": False,
+        "options": {"temperature": 0, "num_predict": 140},
+    }).encode()
+    req = urllib.request.Request("http://127.0.0.1:11434/api/generate", body,
+                                 {"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=timeout) as response:
+        data = json.load(response)
+    raw = data["response"]
+    result = json.loads(raw)
+    if not isinstance(result, dict) or set(result) != set(RESPONSE_SCHEMA["required"]):
+        raise ValueError("invalid anchored output keys")
+    if not isinstance(result["reply"], str) or result["expression"] not in RESPONSE_SCHEMA["properties"]["expression"]["enum"]:
+        raise ValueError("invalid anchored output")
+    return ResponseOutput(result["reply"], result["expression"],
+                          data.get("total_duration", 0) / 1e6,
+                          data.get("prompt_eval_count", 0), data.get("eval_count", 0), raw)
+
+
 def infer(text: str, model: str = "granite4:350m", timeout: int = 90) -> ModelOutput:
     body = json.dumps({
         "model": model,
@@ -99,13 +193,16 @@ def apply_model_output(agent: IoneHarness, output: ModelOutput,
     elif tool == "inspect_route" and result in {"open", "blocked"}:
         turn.proposal.dialogue = f"The {target.replace('_', ' ')} is {result}."
     elif tool == "inspect_route" and result == "tool_unavailable":
-        turn.proposal.dialogue = "I cannot verify the route while the map service is unavailable."
+        turn.proposal.dialogue = (f"I cannot verify the {target.replace('_', ' ')} "
+                                  "while the map service is unavailable.")
     elif tool == "lookup_record" and result not in {"invalid_target", "stale_turn"}:
         turn.proposal.dialogue = f"The red ledger belongs to {result}."
     elif result == "consent_required":
         turn.proposal.dialogue = "The record stays sealed until its owner consents."
     elif result == "opened":
         turn.proposal.dialogue = "The archive door is open now."
-    elif result in {"invalid_tool", "invalid_target", "door_not_locked"}:
+    elif result == "door_not_locked":
+        turn.proposal.dialogue = "The archive door was already open."
+    elif result in {"invalid_tool", "invalid_target"}:
         turn.proposal.dialogue = "I could not complete that action."
     return turn, result
