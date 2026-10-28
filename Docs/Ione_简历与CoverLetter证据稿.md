@@ -11,7 +11,7 @@
 
 **Ione | Independent Research Prototype | UE5 Game NPC Agent | Oct 2026**
 
-**Background:** Built a world-grounded, interruptible NPC prototype to test how LLM dialogue proposals can drive game actions and character expression under explicit state and permission rules.
+**Background:** Built a world-grounded, interruptible NPC prototype to test how LLM dialogue proposals can drive game actions and character expression under explicit state and permission rules, informed by research on LLM-driven game NPCs.
 
 **Responsibilities**
 
@@ -24,7 +24,7 @@ The A/B/C results are from an author-written offline benchmark, one trial per ta
 
 ## Cover Letter 英文段落草稿
 
-Following an interview discussion about game NPCs, I independently built Ione, a world-grounded agent prototype alongside a UE 5.8 character stage. A local LLM proposes structured dialogue and actions, while a deterministic tool gate checks world state, owner consent and whether a turn has been interrupted before committing changes. In a fixed 30-scenario offline comparison, task completion was 12/30 for dialogue only, 22/30 with tool access and 30/30 after adding cancellation; stale tool calls on eight interrupted cases fell from eight to zero. I also compiled the Unreal C++/Blueprint prototype and verified four camera-facing poses in game mode. I am now working toward the full live dialogue-to-performance loop.
+Following our discussion about game NPCs, I read [Rao et al.'s ACL 2024 study of LLM-driven Minecraft NPCs](https://arxiv.org/html/2407.03460v1). Their documented failures around missing live game state and unsuccessful tool actions gave me a concrete question to examine in Ione, an independent agent prototype alongside a UE 5.8 character stage. A local LLM proposes structured dialogue and actions, while a deterministic gate checks world state, owner consent and turn validity before committing changes. In a fixed 30-scenario offline comparison, task completion was 12/30 for dialogue only, 22/30 with tool access and 30/30 after adding cancellation; stale tool calls on eight interrupted cases fell from eight to zero. I also compiled the Unreal C++/Blueprint prototype and verified four camera-facing poses in game mode. The live dialogue-to-performance loop is the next integration step.
 
 ## 给面试官看的证据
 
