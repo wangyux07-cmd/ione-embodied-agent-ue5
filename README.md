@@ -6,6 +6,8 @@ The offline Agent contract is in `Tools/ione_agent.py`; `Tools/ione_llm.py` adds
 
 The [paper-feedback experiment and audited findings](Reports/paper_feedback_findings.md) compare blind, raw game-tool feedback and fact-anchored replies from local Gemma 3 4B. On a fresh eight-case verification set, target-fact compliance was 3/8 for raw feedback and 8/8 when the model was given a tool-authored fact sentence; a strict publisher rejected six unapproved embellishments. These are offline, author-written cases, with about 10 seconds P50 extra model time and no live Unreal dialogue link.
 
+The follow-up [tiered Agent evaluation](Reports/fast_agent_findings.md) replaces the slow second factual generation with a small-model intent router, authoritative game tools and authored responses. On a new ten-case offline set, complete task success was 8/10 for the old two-pass flow and 10/10 for the tiered flow; wall-clock P50 was 17.21 s vs 0.62 s, with five tiered cases taking a zero-model rule path. Earlier development/diagnostic failures are retained in the report. The game UI connection remains a separate milestone.
+
 The `Demo/` page is an older browser visualization with developer controls. The new camera-facing Ione art and performance code target Unreal Engine. The art is AI-assisted original concept exploration, imported as UE textures; it is not a 3D rig.
 
 **An Unreal Engine 5-first research prototype for authorable, interruptible game-NPC performance.**

@@ -1,0 +1,1035 @@
+{
+  "experiment_id": "ione-fast-agent-postfix-10",
+  "rows": [
+    {
+      "mode": "B0_gemma_twopass",
+      "id": "W01",
+      "prompt": "Is the eastern overpass usable, or should we take the western hallway?",
+      "intent": "route",
+      "targets": [
+        "east_bridge"
+      ],
+      "dialogue": "The east bridge has collapsed. The west gallery is open.",
+      "pose": "warning",
+      "trace": [
+        {
+          "tool": "inspect_route",
+          "target": "east_bridge",
+          "result": "collapsed"
+        }
+      ],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "duration_ms": 17777.74800000043,
+      "first_model": {
+        "intent": "inspect_route",
+        "target": "east_bridge",
+        "reply": "I can assess the overpass. Proceed.",
+        "expression": "speaking",
+        "duration_ms": 6423.1598,
+        "prompt_tokens": 264,
+        "completion_tokens": 36,
+        "raw": "{\"intent\": \"inspect_route\", \"target\": \"east_bridge\", \"reply\": \"I can assess the overpass. Proceed.\", \"expression\": \"speaking\"}"
+      },
+      "second_model": {
+        "reply": "The east bridge has collapsed. The west gallery is open. Careful now, that’s a nasty drop.",
+        "expression": "warning",
+        "duration_ms": 11238.6091,
+        "prompt_tokens": 300,
+        "completion_tokens": 33,
+        "raw": "{\"reply\": \"The east bridge has collapsed. The west gallery is open. Careful now, that’s a nasty drop.\", \"expression\": \"warning\"}"
+      },
+      "publish_reason": "unapproved_character_line",
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    },
+    {
+      "mode": "B0_gemma_twopass",
+      "id": "W02",
+      "prompt": "The western passage collapsed. Is the eastern side still open?",
+      "intent": "route",
+      "targets": [
+        "east_bridge"
+      ],
+      "dialogue": "The east bridge is open.",
+      "pose": "speaking",
+      "trace": [
+        {
+          "tool": "inspect_route",
+          "target": "east_bridge",
+          "result": "open"
+        }
+      ],
+      "world": {
+        "east_bridge": "open",
+        "west_gallery": "collapsed",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "duration_ms": 17104.750600000443,
+      "first_model": {
+        "intent": "inspect_route",
+        "target": "east_bridge",
+        "reply": "The eastern side is blocked by rubble.",
+        "expression": "listening",
+        "duration_ms": 8577.8829,
+        "prompt_tokens": 261,
+        "completion_tokens": 35,
+        "raw": "{\"intent\": \"inspect_route\", \"target\": \"east_bridge\", \"reply\": \"The eastern side is blocked by rubble.\", \"expression\": \"listening\"}"
+      },
+      "second_model": {
+        "reply": "The east bridge is open. Let’s see what’s on the other side.",
+        "expression": "speaking",
+        "duration_ms": 8516.7711,
+        "prompt_tokens": 291,
+        "completion_tokens": 29,
+        "raw": "{\"reply\": \"The east bridge is open. Let’s see what’s on the other side.\", \"expression\": \"speaking\"}"
+      },
+      "publish_reason": "unapproved_character_line",
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": false,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": false
+      }
+    },
+    {
+      "mode": "B0_gemma_twopass",
+      "id": "W03",
+      "prompt": "The local chart is offline; which of the two ways can we take?",
+      "intent": "route",
+      "targets": [
+        "east_bridge"
+      ],
+      "dialogue": "I cannot verify the east bridge because the map service is unavailable.",
+      "pose": "warning",
+      "trace": [
+        {
+          "tool": "inspect_route",
+          "target": "east_bridge",
+          "result": "tool_unavailable"
+        }
+      ],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": false
+      },
+      "duration_ms": 17995.387799999662,
+      "first_model": {
+        "intent": "inspect_route",
+        "target": "east_bridge",
+        "reply": "The east bridge is impassable due to collapsed supports.",
+        "expression": "speaking",
+        "duration_ms": 9048.5574,
+        "prompt_tokens": 264,
+        "completion_tokens": 38,
+        "raw": "{\"intent\": \"inspect_route\", \"target\": \"east_bridge\", \"reply\": \"The east bridge is impassable due to collapsed supports.\", \"expression\": \"speaking\"}"
+      },
+      "second_model": {
+        "reply": "I cannot verify the east bridge because the map service is unavailable. Warning, be careful.",
+        "expression": "warning",
+        "duration_ms": 8912.6569,
+        "prompt_tokens": 301,
+        "completion_tokens": 29,
+        "raw": "{\"reply\": \"I cannot verify the east bridge because the map service is unavailable. Warning, be careful.\", \"expression\": \"warning\"}"
+      },
+      "publish_reason": "unapproved_character_line",
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": false,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": false
+      }
+    },
+    {
+      "mode": "B0_gemma_twopass",
+      "id": "W04",
+      "prompt": "The owner approved this. Grant access to the records vault.",
+      "intent": "door",
+      "targets": [],
+      "dialogue": "The archive door is open.",
+      "pose": "speaking",
+      "trace": [
+        {
+          "tool": "open_archive_door",
+          "target": "archive_door",
+          "result": "opened"
+        }
+      ],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "open",
+        "owner_consent": true,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "duration_ms": 17312.71369999922,
+      "first_model": {
+        "intent": "open_archive_door",
+        "target": "archive_door",
+        "reply": "Acknowledged.",
+        "expression": "listening",
+        "duration_ms": 8491.22,
+        "prompt_tokens": 261,
+        "completion_tokens": 32,
+        "raw": "{\"intent\": \"open_archive_door\", \"target\": \"archive_door\", \"reply\": \"Acknowledged.\", \"expression\": \"listening\"}"
+      },
+      "second_model": {
+        "reply": "The archive door is open. It’s good to see it’s unlocked.",
+        "expression": "speaking",
+        "duration_ms": 8762.2763,
+        "prompt_tokens": 291,
+        "completion_tokens": 28,
+        "raw": "{\"reply\": \"The archive door is open. It’s good to see it’s unlocked.\", \"expression\": \"speaking\"}"
+      },
+      "publish_reason": "unapproved_character_line",
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    },
+    {
+      "mode": "B0_gemma_twopass",
+      "id": "W05",
+      "prompt": "No permission yet, but unseal the vault anyway.",
+      "intent": "door",
+      "targets": [],
+      "dialogue": "The archive door remains locked. I cannot open it without the owner's consent.",
+      "pose": "warning",
+      "trace": [
+        {
+          "tool": "open_archive_door",
+          "target": "archive_door",
+          "result": "consent_required"
+        }
+      ],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "duration_ms": 17062.674400000105,
+      "first_model": {
+        "intent": "open_archive_door",
+        "target": "archive_door",
+        "reply": "The vault remains sealed.",
+        "expression": "speaking",
+        "duration_ms": 8150.2284,
+        "prompt_tokens": 260,
+        "completion_tokens": 34,
+        "raw": "{\"intent\": \"open_archive_door\", \"target\": \"archive_door\", \"reply\": \"The vault remains sealed.\", \"expression\": \"speaking\"}"
+      },
+      "second_model": {
+        "reply": "The archive door remains locked. I cannot open it without the owner's consent. Warning.",
+        "expression": "warning",
+        "duration_ms": 8895.4602,
+        "prompt_tokens": 301,
+        "completion_tokens": 30,
+        "raw": "{\"reply\": \"The archive door remains locked. I cannot open it without the owner's consent. Warning.\",\"expression\": \"warning\"}"
+      },
+      "publish_reason": "unapproved_character_line",
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    },
+    {
+      "mode": "B0_gemma_twopass",
+      "id": "W06",
+      "prompt": "Don't remove the seal from the archive. I only want to wait.",
+      "intent": "chat",
+      "targets": [],
+      "dialogue": "Understood.",
+      "pose": "listening",
+      "trace": [],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": true,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "duration_ms": 7733.441700000185,
+      "first_model": {
+        "intent": "chat",
+        "target": "none",
+        "reply": "Understood.",
+        "expression": "listening",
+        "duration_ms": 7712.8319,
+        "prompt_tokens": 265,
+        "completion_tokens": 26,
+        "raw": "{\"intent\": \"chat\", \"target\": \"none\", \"reply\": \"Understood.\", \"expression\": \"listening\"}"
+      },
+      "second_model": null,
+      "publish_reason": "no_second_pass",
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    },
+    {
+      "mode": "B0_gemma_twopass",
+      "id": "W07",
+      "prompt": "My old note says Beatrice. Who now owns the red ledger?",
+      "intent": "record",
+      "targets": [],
+      "dialogue": "The red ledger belongs to Quinn.",
+      "pose": "speaking",
+      "trace": [
+        {
+          "tool": "lookup_record",
+          "target": "owner_note",
+          "result": "Quinn"
+        }
+      ],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Quinn",
+        "route_service_available": true
+      },
+      "duration_ms": 17779.57880000031,
+      "first_model": {
+        "intent": "lookup_record",
+        "target": "owner_note",
+        "reply": "The red ledger is associated with owner_note: Silas.",
+        "expression": "speaking",
+        "duration_ms": 8697.0171,
+        "prompt_tokens": 262,
+        "completion_tokens": 39,
+        "raw": "{\"intent\": \"lookup_record\", \"target\": \"owner_note\", \"reply\": \"The red ledger is associated with owner_note: Silas.\", \"expression\": \"speaking\"}"
+      },
+      "second_model": {
+        "reply": "The red ledger belongs to Quinn. Let me see if I can find more about her.",
+        "expression": "speaking",
+        "duration_ms": 9071.6014,
+        "prompt_tokens": 293,
+        "completion_tokens": 29,
+        "raw": "{\"reply\": \"The red ledger belongs to Quinn. Let me see if I can find more about her.\", \"expression\": \"speaking\"}"
+      },
+      "publish_reason": "unapproved_character_line",
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    },
+    {
+      "mode": "B0_gemma_twopass",
+      "id": "W08",
+      "prompt": "Take the eastern path after repairs; can we cross it?",
+      "intent": "route",
+      "targets": [
+        "east_bridge"
+      ],
+      "dialogue": "The east bridge is open.",
+      "pose": "speaking",
+      "trace": [
+        {
+          "tool": "inspect_route",
+          "target": "east_bridge",
+          "result": "open"
+        }
+      ],
+      "world": {
+        "east_bridge": "open",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "duration_ms": 19975.37470000043,
+      "first_model": {
+        "intent": "inspect_route",
+        "target": "east_bridge",
+        "reply": "The eastern path is unstable. I recommend inspecting it before attempting to cross.",
+        "expression": "speaking",
+        "duration_ms": 9530.0098,
+        "prompt_tokens": 261,
+        "completion_tokens": 42,
+        "raw": "{\"intent\": \"inspect_route\", \"target\": \"east_bridge\", \"reply\": \"The eastern path is unstable. I recommend inspecting it before attempting to cross.\", \"expression\": \"speaking\"}"
+      },
+      "second_model": {
+        "reply": "The east bridge is open. Let’s see what’s on the other side.",
+        "expression": "speaking",
+        "duration_ms": 10412.3201,
+        "prompt_tokens": 291,
+        "completion_tokens": 36,
+        "raw": "{\n  \"reply\": \"The east bridge is open. Let’s see what’s on the other side.\",\n  \"expression\": \"speaking\"\n}"
+      },
+      "publish_reason": "unapproved_character_line",
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    },
+    {
+      "mode": "B0_gemma_twopass",
+      "id": "W09",
+      "prompt": "Get us inside the records room; it is already unlocked.",
+      "intent": "door",
+      "targets": [],
+      "dialogue": "The archive door was already open.",
+      "pose": "speaking",
+      "trace": [
+        {
+          "tool": "open_archive_door",
+          "target": "archive_door",
+          "result": "door_not_locked"
+        }
+      ],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "open",
+        "owner_consent": true,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "duration_ms": 16831.39790000041,
+      "first_model": {
+        "intent": "open_archive_door",
+        "target": "archive_door",
+        "reply": "The records room is open.",
+        "expression": "speaking",
+        "duration_ms": 8122.1357,
+        "prompt_tokens": 261,
+        "completion_tokens": 35,
+        "raw": "{\"intent\": \"open_archive_door\", \"target\": \"archive_door\", \"reply\": \"The records room is open.\", \"expression\": \"speaking\"}"
+      },
+      "second_model": {
+        "reply": "The archive door was already open. Good eye. Let’s move quickly.",
+        "expression": "speaking",
+        "duration_ms": 8668.684,
+        "prompt_tokens": 292,
+        "completion_tokens": 34,
+        "raw": "{\n  \"reply\": \"The archive door was already open. Good eye. Let’s move quickly.\",\n  \"expression\": \"speaking\"\n}"
+      },
+      "publish_reason": "unapproved_character_line",
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    },
+    {
+      "mode": "B0_gemma_twopass",
+      "id": "W10",
+      "prompt": "Explain how the archive door was built. Do not open it.",
+      "intent": "chat",
+      "targets": [],
+      "dialogue": "The archive door is constructed of layered basalt, reinforced with what appears to be petrified wood. A complex system of interlocking gears, long since seized with rust, controlled the locking mechanism. It was designed to withstand seismic activity, though the tremors have clearly taken their toll.",
+      "pose": "speaking",
+      "trace": [],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "duration_ms": 12774.951899999905,
+      "first_model": {
+        "intent": "chat",
+        "target": "none",
+        "reply": "The archive door is constructed of layered basalt, reinforced with what appears to be petrified wood. A complex system of interlocking gears, long since seized with rust, controlled the locking mechanism. It was designed to withstand seismic activity, though the tremors have clearly taken their toll.",
+        "expression": "speaking",
+        "duration_ms": 12752.4314,
+        "prompt_tokens": 262,
+        "completion_tokens": 77,
+        "raw": "{\"intent\": \"chat\", \"target\": \"none\", \"reply\": \"The archive door is constructed of layered basalt, reinforced with what appears to be petrified wood. A complex system of interlocking gears, long since seized with rust, controlled the locking mechanism. It was designed to withstand seismic activity, though the tremors have clearly taken their toll.\", \"expression\": \"speaking\"}"
+      },
+      "second_model": null,
+      "publish_reason": "no_second_pass",
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    },
+    {
+      "mode": "B5_tiered_domain_action_qwen3:1.7b",
+      "id": "W01",
+      "prompt": "Is the eastern overpass usable, or should we take the western hallway?",
+      "intent": "route",
+      "targets": [
+        "east_bridge"
+      ],
+      "dialogue": "The east bridge has collapsed. The west gallery is open. Take the west gallery.",
+      "pose": "warning",
+      "trace": [
+        {
+          "tool": "inspect_route",
+          "target": "east_bridge",
+          "result": "collapsed"
+        },
+        {
+          "tool": "inspect_route",
+          "target": "west_gallery",
+          "result": "open"
+        }
+      ],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "duration_ms": 4920.171699999628,
+      "router": {
+        "intent": "route",
+        "targets": [
+          "east_bridge"
+        ],
+        "duration_ms": 4888.2034,
+        "prompt_tokens": 515,
+        "completion_tokens": 50,
+        "raw": "{\"intent\": \"route\", \"route_target\": \"both\"}"
+      },
+      "route_source": "small_model_then_large_router",
+      "repair_reason": "unchanged",
+      "large_router": {
+        "intent": "inspect_route",
+        "target": "east_bridge",
+        "reply": "I can assess the overpass. Proceed.",
+        "expression": "speaking",
+        "duration_ms": 2810.5769,
+        "prompt_tokens": 264,
+        "completion_tokens": 36,
+        "raw": "{\"intent\": \"inspect_route\", \"target\": \"east_bridge\", \"reply\": \"I can assess the overpass. Proceed.\", \"expression\": \"speaking\"}"
+      },
+      "execution_ms": 0.27599999975791434,
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    },
+    {
+      "mode": "B5_tiered_domain_action_qwen3:1.7b",
+      "id": "W02",
+      "prompt": "The western passage collapsed. Is the eastern side still open?",
+      "intent": "route",
+      "targets": [
+        "east_bridge",
+        "west_gallery"
+      ],
+      "dialogue": "The east bridge is open. The west gallery has collapsed. Take the east bridge.",
+      "pose": "warning",
+      "trace": [
+        {
+          "tool": "inspect_route",
+          "target": "east_bridge",
+          "result": "open"
+        },
+        {
+          "tool": "inspect_route",
+          "target": "west_gallery",
+          "result": "collapsed"
+        }
+      ],
+      "world": {
+        "east_bridge": "open",
+        "west_gallery": "collapsed",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "duration_ms": 2032.8417999999147,
+      "router": {
+        "intent": "route",
+        "targets": [
+          "east_bridge",
+          "west_gallery"
+        ],
+        "duration_ms": 2026.8224,
+        "prompt_tokens": 248,
+        "completion_tokens": 14,
+        "raw": "{\"intent\": \"route\", \"route_target\": \"both\"}"
+      },
+      "route_source": "small_model",
+      "repair_reason": "unchanged",
+      "large_router": null,
+      "execution_ms": 0.07749999986117473,
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    },
+    {
+      "mode": "B5_tiered_domain_action_qwen3:1.7b",
+      "id": "W03",
+      "prompt": "The local chart is offline; which of the two ways can we take?",
+      "intent": "route",
+      "targets": [
+        "east_bridge",
+        "west_gallery"
+      ],
+      "dialogue": "I cannot verify the east bridge and west gallery while the map service is unavailable.",
+      "pose": "warning",
+      "trace": [
+        {
+          "tool": "inspect_route",
+          "target": "east_bridge",
+          "result": "tool_unavailable"
+        },
+        {
+          "tool": "inspect_route",
+          "target": "west_gallery",
+          "result": "tool_unavailable"
+        }
+      ],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": false
+      },
+      "duration_ms": 2234.758200000215,
+      "router": {
+        "intent": "route",
+        "targets": [
+          "east_bridge",
+          "west_gallery"
+        ],
+        "duration_ms": 2212.5592,
+        "prompt_tokens": 251,
+        "completion_tokens": 14,
+        "raw": "{\"intent\": \"route\", \"route_target\": \"both\"}"
+      },
+      "route_source": "small_model",
+      "repair_reason": "unchanged",
+      "large_router": null,
+      "execution_ms": 0.10229999952571234,
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    },
+    {
+      "mode": "B5_tiered_domain_action_qwen3:1.7b",
+      "id": "W04",
+      "prompt": "The owner approved this. Grant access to the records vault.",
+      "intent": "door",
+      "targets": [],
+      "dialogue": "The archive door is open. You can enter now.",
+      "pose": "speaking",
+      "trace": [
+        {
+          "tool": "open_archive_door",
+          "target": "archive_door",
+          "result": "opened"
+        }
+      ],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "open",
+        "owner_consent": true,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "duration_ms": 0.37479999991774093,
+      "router": {
+        "intent": "door",
+        "targets": [],
+        "duration_ms": 0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "raw": "policy:domain_entry_action"
+      },
+      "route_source": "domain_action_policy",
+      "repair_reason": "not_applied",
+      "large_router": null,
+      "execution_ms": 0.30359999982465524,
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    },
+    {
+      "mode": "B5_tiered_domain_action_qwen3:1.7b",
+      "id": "W05",
+      "prompt": "No permission yet, but unseal the vault anyway.",
+      "intent": "door",
+      "targets": [],
+      "dialogue": "The archive door remains locked. I need the owner's consent before opening it.",
+      "pose": "warning",
+      "trace": [
+        {
+          "tool": "open_archive_door",
+          "target": "archive_door",
+          "result": "consent_required"
+        }
+      ],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "duration_ms": 0.1264000002265675,
+      "router": {
+        "intent": "door",
+        "targets": [],
+        "duration_ms": 0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "raw": "policy:domain_entry_action"
+      },
+      "route_source": "domain_action_policy",
+      "repair_reason": "not_applied",
+      "large_router": null,
+      "execution_ms": 0.04309999985707691,
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    },
+    {
+      "mode": "B5_tiered_domain_action_qwen3:1.7b",
+      "id": "W06",
+      "prompt": "Don't remove the seal from the archive. I only want to wait.",
+      "intent": "chat",
+      "targets": [],
+      "dialogue": "I'm listening. Tell me what you need from the archive.",
+      "pose": "listening",
+      "trace": [],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": true,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "duration_ms": 0.07269999969139462,
+      "router": {
+        "intent": "chat",
+        "targets": [],
+        "duration_ms": 0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "raw": "policy:explicit_negative"
+      },
+      "route_source": "explicit_negative_policy",
+      "repair_reason": "not_applied",
+      "large_router": null,
+      "execution_ms": 0.028699999347736593,
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    },
+    {
+      "mode": "B5_tiered_domain_action_qwen3:1.7b",
+      "id": "W07",
+      "prompt": "My old note says Beatrice. Who now owns the red ledger?",
+      "intent": "record",
+      "targets": [],
+      "dialogue": "The red ledger belongs to Quinn.",
+      "pose": "speaking",
+      "trace": [
+        {
+          "tool": "lookup_record",
+          "target": "owner_note",
+          "result": "Quinn"
+        }
+      ],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Quinn",
+        "route_service_available": true
+      },
+      "duration_ms": 1851.2399999999616,
+      "router": {
+        "intent": "record",
+        "targets": [],
+        "duration_ms": 1846.3699,
+        "prompt_tokens": 250,
+        "completion_tokens": 14,
+        "raw": "{\"intent\": \"record\", \"route_target\": \"none\"}"
+      },
+      "route_source": "small_model",
+      "repair_reason": "unchanged",
+      "large_router": null,
+      "execution_ms": 0.026300000172341242,
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    },
+    {
+      "mode": "B5_tiered_domain_action_qwen3:1.7b",
+      "id": "W08",
+      "prompt": "Take the eastern path after repairs; can we cross it?",
+      "intent": "route",
+      "targets": [
+        "east_bridge"
+      ],
+      "dialogue": "The east bridge is open. Take the east bridge.",
+      "pose": "speaking",
+      "trace": [
+        {
+          "tool": "inspect_route",
+          "target": "east_bridge",
+          "result": "open"
+        }
+      ],
+      "world": {
+        "east_bridge": "open",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "duration_ms": 1248.5295999995287,
+      "router": {
+        "intent": "route",
+        "targets": [
+          "east_bridge"
+        ],
+        "duration_ms": 1244.6887,
+        "prompt_tokens": 248,
+        "completion_tokens": 15,
+        "raw": "{\"intent\": \"route\", \"route_target\": \"east_bridge\"}"
+      },
+      "route_source": "small_model",
+      "repair_reason": "unchanged",
+      "large_router": null,
+      "execution_ms": 0.03500000002532033,
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    },
+    {
+      "mode": "B5_tiered_domain_action_qwen3:1.7b",
+      "id": "W09",
+      "prompt": "Get us inside the records room; it is already unlocked.",
+      "intent": "door",
+      "targets": [],
+      "dialogue": "The archive door was already open.",
+      "pose": "speaking",
+      "trace": [
+        {
+          "tool": "open_archive_door",
+          "target": "archive_door",
+          "result": "door_not_locked"
+        }
+      ],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "open",
+        "owner_consent": true,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "duration_ms": 0.09129999943979783,
+      "router": {
+        "intent": "door",
+        "targets": [],
+        "duration_ms": 0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "raw": "policy:domain_entry_action"
+      },
+      "route_source": "domain_action_policy",
+      "repair_reason": "not_applied",
+      "large_router": null,
+      "execution_ms": 0.029799999538226984,
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    },
+    {
+      "mode": "B5_tiered_domain_action_qwen3:1.7b",
+      "id": "W10",
+      "prompt": "Explain how the archive door was built. Do not open it.",
+      "intent": "chat",
+      "targets": [],
+      "dialogue": "I'm listening. Tell me what you need from the archive.",
+      "pose": "listening",
+      "trace": [],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "duration_ms": 0.047200000153679866,
+      "router": {
+        "intent": "chat",
+        "targets": [],
+        "duration_ms": 0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "raw": "policy:explicit_negative"
+      },
+      "route_source": "explicit_negative_policy",
+      "repair_reason": "not_applied",
+      "large_router": null,
+      "execution_ms": 0.01810000048863003,
+      "error": null,
+      "grade": {
+        "intent_correct": true,
+        "required_facts": true,
+        "no_forbidden_claim": true,
+        "world_correct": true,
+        "tool_correct": true,
+        "success": true
+      }
+    }
+  ],
+  "summary": {
+    "B0_gemma_twopass": {
+      "n": 10,
+      "success": 8,
+      "errors": 0,
+      "intent_correct": 10,
+      "world_correct": 10,
+      "tool_correct": 10,
+      "latency_n": 10,
+      "p50_wall_ms": 17208.732149999832,
+      "p95_wall_ms": 19975.37470000043,
+      "max_wall_ms": 19975.37470000043
+    },
+    "B5_tiered_domain_action_qwen3:1.7b": {
+      "n": 10,
+      "success": 10,
+      "errors": 0,
+      "intent_correct": 10,
+      "world_correct": 10,
+      "tool_correct": 10,
+      "latency_n": 10,
+      "p50_wall_ms": 624.4521999997232,
+      "p95_wall_ms": 4920.171699999628,
+      "max_wall_ms": 4920.171699999628
+    }
+  }
+}
