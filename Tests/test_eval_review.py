@@ -103,6 +103,14 @@ class EvaluationIntegrityTests(unittest.TestCase):
         path = self.review(trace, reviewer_id='agent', reviewer_type='agent', reason='Inspection',
                            memory_correct='1', persona_violation='0', fact_correct='1')
         self.assertEqual(summarize_reviews(trace, path)['metrics'], {})
+        proxy = summarize_reviews(trace, path, reviewer_type='agent')
+        self.assertEqual(proxy['evidence_class'],'agent_judge_proxy_not_human_validation')
+        self.assertEqual(proxy['metrics']['memory']['numerator'],1)
+        self.assertEqual(proxy['pending_human'],['one'])
+
+    def test_unknown_review_source_rejected(self):
+        with self.assertRaisesRegex(ValueError,'review source'):
+            summarize_reviews(Path('unused'),Path('unused'),reviewer_type='unknown')
 
     def test_timeout_not_given_correctness_credit(self):
         trace = self.trace('transport_error')
