@@ -19,6 +19,8 @@ class World:
     west_gallery: str = "open"
     archive_door: str = "locked"
     owner_consent: bool = False
+    record_owner: str = "Mara"
+    route_service_available: bool = True
 
 
 @dataclass
@@ -40,7 +42,7 @@ class Turn:
 
 
 class ToolGate:
-    ALLOWED = {"inspect_route", "open_archive_door"}
+    ALLOWED = {"inspect_route", "open_archive_door", "lookup_record"}
 
     @staticmethod
     def commit(turn: Turn, world: World, generation: int) -> str:
@@ -49,9 +51,16 @@ class ToolGate:
         p = turn.proposal
         if p.tool not in ToolGate.ALLOWED:
             return "invalid_tool"
+        if p.tool == "lookup_record":
+            if p.argument != "owner_note":
+                return "invalid_target"
+            turn.committed = True
+            return world.record_owner
         if p.tool == "inspect_route":
             if p.argument not in {"east_bridge", "west_gallery"}:
                 return "invalid_target"
+            if not world.route_service_available:
+                return "tool_unavailable"
             turn.committed = True
             return getattr(world, p.argument)
         if p.argument != "archive_door":

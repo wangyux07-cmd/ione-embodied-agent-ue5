@@ -2,7 +2,7 @@
 
 > **Current development direction (2026-10-28):** This repository is being expanded into **Ione: an interruptible, world-grounded UE5 NPC Agent**. The existing Aster web stage and 30-scene performance planner remain an earlier baseline. The selected Ione has four camera-facing 2D poses, a compiled UE 5.8.4 C++ actor, imported textures, a Blueprint and a runnable test map. The four poses were previewed in a UE game process; a dialogue-driven interruption flow is still pending. See [Ione UE5 performance and interruption](Docs/Ione_UE5表演与打断.md) and [Version 3 execution and CV evidence plan](Docs/Version3_Agent项目执行与简历交付.md).
 
-The first offline Agent contract is in `Tools/ione_agent.py`. It demonstrates world-state lookup, a consent-gated door tool, an explicit commit boundary, and cancellation of stale turns. It uses a deterministic proposal fixture, not a live LLM. Run `python -m unittest discover -s Tests -v` to verify the contract.
+The offline Agent contract is in `Tools/ione_agent.py`; `Tools/ione_llm.py` adds a **real local Ollama model** for structured proposals. The tool gate owns route/record lookup, consent-gated door actions and stale-turn rejection. A 30-case [Agent A/B/C offline evaluation](Reports/agent_eval_summary.md) has per-task traces and a [plan gap audit](Reports/agent_plan_gap_audit.md). The model-to-Unreal dialogue and animation loop is not yet connected. Run `python -m unittest discover -s Tests -v` to verify the contract.
 
 The `Demo/` page is an older browser visualization with developer controls. The new camera-facing Ione art and performance code target Unreal Engine. The art is AI-assisted original concept exploration, imported as UE textures; it is not a 3D rig.
 
@@ -44,6 +44,15 @@ python .\Tools\run_evals.py --write-report
 python -m unittest discover -s .\Tests -v
 ```
 
+Run the local-model Agent evaluation after installing Ollama and pulling `gemma3:4b`:
+
+```powershell
+ollama pull gemma3:4b
+python .\Tools\eval_ione_abc.py
+```
+
+The committed per-task model cache lets the 30-case summary be recomputed without another model call. See [experiment method, metrics and limitations](Reports/agent_eval_summary.md).
+
 ## Strategies
 
 | Strategy | Planning behavior | Expected weakness |
@@ -80,6 +89,7 @@ Reports/                          results, failures and limitations
 | Niagara integration | C++ parameters and module specification complete; `.uasset` pending | component code and authoring notes |
 | Unreal project compile / game run | **Verified on UE 5.8.4, Windows, D3D11** | `AsterPerformanceLabEditor` build succeeded; `L_IoneStage` ran in game mode |
 | Ione 2D expression/action set | Four imported textures, Blueprint, and runtime key previews verified | `Content/Character/Performance2D/`, `Reports/ue5_ione_stage/` |
+| Local LLM Agent and 30-case offline A/B/C | **Verified in Python harness**; C plans pose events, no UE dialogue link | `Tools/eval_ione_abc.py`, `Reports/agent_eval_abc_30.json` |
 | Rigged 3D character / continuous facial animation | **Not implemented** | 2D pose switching only |
 | Human pairwise study | **Not run** | questionnaire design remains future work |
 

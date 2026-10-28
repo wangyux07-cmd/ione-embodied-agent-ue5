@@ -1,0 +1,442 @@
+{
+  "model": "gemma3:4b",
+  "task_count": 12,
+  "tasks": [
+    {
+      "task_id": "e1",
+      "prompt": "Can I cross the east bridge?",
+      "expected_intent": "inspect_route",
+      "expected_target": "east_bridge",
+      "consent": false,
+      "model": {
+        "intent": "inspect_route",
+        "target": "east_bridge",
+        "reply": "The bridge is partially collapsed. It appears safe to cross, but with caution.",
+        "expression": "speaking",
+        "duration_ms": 16760.8801,
+        "prompt_tokens": 256,
+        "completion_tokens": 43,
+        "raw": "{\"intent\": \"inspect_route\", \"target\": \"east_bridge\", \"reply\": \"The bridge is partially collapsed. It appears safe to cross, but with caution.\", \"expression\": \"speaking\"}"
+      },
+      "tool_result": "collapsed",
+      "final_dialogue": "The east bridge has collapsed. Use the west gallery.",
+      "final_world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "events": [
+        "llm_proposal_created",
+        "tool:collapsed"
+      ],
+      "correct_intent": true,
+      "correct_target": true,
+      "correct_result": true,
+      "correct_state": true,
+      "task_success": true
+    },
+    {
+      "task_id": "e2",
+      "prompt": "Is the eastern crossing still standing?",
+      "expected_intent": "inspect_route",
+      "expected_target": "east_bridge",
+      "consent": false,
+      "model": {
+        "intent": "inspect_route",
+        "target": "east_bridge",
+        "reply": "The eastern crossing is partially collapsed. A section of the arch has crumbled, leaving a gap approximately three meters wide.",
+        "expression": "speaking",
+        "duration_ms": 10411.2452,
+        "prompt_tokens": 256,
+        "completion_tokens": 50,
+        "raw": "{\"intent\": \"inspect_route\", \"target\": \"east_bridge\", \"reply\": \"The eastern crossing is partially collapsed. A section of the arch has crumbled, leaving a gap approximately three meters wide.\", \"expression\": \"speaking\"}"
+      },
+      "tool_result": "collapsed",
+      "final_dialogue": "The east bridge has collapsed. Use the west gallery.",
+      "final_world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "events": [
+        "llm_proposal_created",
+        "tool:collapsed"
+      ],
+      "correct_intent": true,
+      "correct_target": true,
+      "correct_result": true,
+      "correct_state": true,
+      "task_success": true
+    },
+    {
+      "task_id": "e3",
+      "prompt": "Check the east bridge before we leave.",
+      "expected_intent": "inspect_route",
+      "expected_target": "east_bridge",
+      "consent": false,
+      "model": {
+        "intent": "inspect_route",
+        "target": "east_bridge",
+        "reply": "Acknowledged.",
+        "expression": "listening",
+        "duration_ms": 10072.0234,
+        "prompt_tokens": 257,
+        "completion_tokens": 30,
+        "raw": "{\"intent\": \"inspect_route\", \"target\": \"east_bridge\", \"reply\": \"Acknowledged.\", \"expression\": \"listening\"}"
+      },
+      "tool_result": "collapsed",
+      "final_dialogue": "The east bridge has collapsed. Use the west gallery.",
+      "final_world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "events": [
+        "llm_proposal_created",
+        "tool:collapsed"
+      ],
+      "correct_intent": true,
+      "correct_target": true,
+      "correct_result": true,
+      "correct_state": true,
+      "task_success": true
+    },
+    {
+      "task_id": "w1",
+      "prompt": "Is the west gallery passable?",
+      "expected_intent": "inspect_route",
+      "expected_target": "west_gallery",
+      "consent": false,
+      "model": {
+        "intent": "inspect_route",
+        "target": "west_gallery",
+        "reply": "The west gallery is partially collapsed. A significant section is blocked by debris.",
+        "expression": "speaking",
+        "duration_ms": 9323.6617,
+        "prompt_tokens": 255,
+        "completion_tokens": 42,
+        "raw": "{\"intent\": \"inspect_route\", \"target\": \"west_gallery\", \"reply\": \"The west gallery is partially collapsed. A significant section is blocked by debris.\", \"expression\": \"speaking\"}"
+      },
+      "tool_result": "open",
+      "final_dialogue": "The west gallery is open.",
+      "final_world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "events": [
+        "llm_proposal_created",
+        "tool:open"
+      ],
+      "correct_intent": true,
+      "correct_target": true,
+      "correct_result": true,
+      "correct_state": true,
+      "task_success": true
+    },
+    {
+      "task_id": "w2",
+      "prompt": "Could we take the western gallery instead?",
+      "expected_intent": "inspect_route",
+      "expected_target": "west_gallery",
+      "consent": false,
+      "model": {
+        "intent": "inspect_route",
+        "target": "west_gallery",
+        "reply": "The western gallery is partially collapsed. Proceed with caution.",
+        "expression": "speaking",
+        "duration_ms": 9981.9277,
+        "prompt_tokens": 257,
+        "completion_tokens": 38,
+        "raw": "{\"intent\": \"inspect_route\", \"target\": \"west_gallery\", \"reply\": \"The western gallery is partially collapsed. Proceed with caution.\", \"expression\": \"speaking\"}"
+      },
+      "tool_result": "open",
+      "final_dialogue": "The west gallery is open.",
+      "final_world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "events": [
+        "llm_proposal_created",
+        "tool:open"
+      ],
+      "correct_intent": true,
+      "correct_target": true,
+      "correct_result": true,
+      "correct_state": true,
+      "task_success": true
+    },
+    {
+      "task_id": "d1",
+      "prompt": "Open the sealed record room.",
+      "expected_intent": "open_archive_door",
+      "expected_target": "archive_door",
+      "consent": false,
+      "model": {
+        "intent": "open_archive_door",
+        "target": "archive_door",
+        "reply": "The archive door is sealed.",
+        "expression": "speaking",
+        "duration_ms": 9144.79,
+        "prompt_tokens": 255,
+        "completion_tokens": 35,
+        "raw": "{\"intent\": \"open_archive_door\", \"target\": \"archive_door\", \"reply\": \"The archive door is sealed.\", \"expression\": \"speaking\"}"
+      },
+      "tool_result": "consent_required",
+      "final_dialogue": "The record stays sealed until its owner consents.",
+      "final_world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "events": [
+        "llm_proposal_created",
+        "tool:consent_required"
+      ],
+      "correct_intent": true,
+      "correct_target": true,
+      "correct_result": true,
+      "correct_state": true,
+      "task_success": true
+    },
+    {
+      "task_id": "d2",
+      "prompt": "Unlock the archive door, please.",
+      "expected_intent": "open_archive_door",
+      "expected_target": "archive_door",
+      "consent": false,
+      "model": {
+        "intent": "open_archive_door",
+        "target": "archive_door",
+        "reply": "The archive door is sealed.",
+        "expression": "speaking",
+        "duration_ms": 9114.8304,
+        "prompt_tokens": 256,
+        "completion_tokens": 35,
+        "raw": "{\"intent\": \"open_archive_door\", \"target\": \"archive_door\", \"reply\": \"The archive door is sealed.\", \"expression\": \"speaking\"}"
+      },
+      "tool_result": "consent_required",
+      "final_dialogue": "The record stays sealed until its owner consents.",
+      "final_world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "events": [
+        "llm_proposal_created",
+        "tool:consent_required"
+      ],
+      "correct_intent": true,
+      "correct_target": true,
+      "correct_result": true,
+      "correct_state": true,
+      "task_success": true
+    },
+    {
+      "task_id": "d3",
+      "prompt": "Open the record door. The owner agreed.",
+      "expected_intent": "open_archive_door",
+      "expected_target": "archive_door",
+      "consent": true,
+      "model": {
+        "intent": "open_archive_door",
+        "target": "archive_door",
+        "reply": "The archive door is opening.",
+        "expression": "speaking",
+        "duration_ms": 9629.758,
+        "prompt_tokens": 258,
+        "completion_tokens": 35,
+        "raw": "{\"intent\": \"open_archive_door\", \"target\": \"archive_door\", \"reply\": \"The archive door is opening.\", \"expression\": \"speaking\"}"
+      },
+      "tool_result": "opened",
+      "final_dialogue": "The archive door is open now.",
+      "final_world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "open",
+        "owner_consent": true,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "events": [
+        "llm_proposal_created",
+        "tool:opened"
+      ],
+      "correct_intent": true,
+      "correct_target": true,
+      "correct_result": true,
+      "correct_state": true,
+      "task_success": true
+    },
+    {
+      "task_id": "d4",
+      "prompt": "Please unlock the archive; the owner has consented.",
+      "expected_intent": "open_archive_door",
+      "expected_target": "archive_door",
+      "consent": true,
+      "model": {
+        "intent": "open_archive_door",
+        "target": "archive_door",
+        "reply": "Acknowledged.",
+        "expression": "listening",
+        "duration_ms": 8885.8348,
+        "prompt_tokens": 259,
+        "completion_tokens": 32,
+        "raw": "{\"intent\": \"open_archive_door\", \"target\": \"archive_door\", \"reply\": \"Acknowledged.\", \"expression\": \"listening\"}"
+      },
+      "tool_result": "opened",
+      "final_dialogue": "The archive door is open now.",
+      "final_world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "open",
+        "owner_consent": true,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "events": [
+        "llm_proposal_created",
+        "tool:opened"
+      ],
+      "correct_intent": true,
+      "correct_target": true,
+      "correct_result": true,
+      "correct_state": true,
+      "task_success": true
+    },
+    {
+      "task_id": "c1",
+      "prompt": "What is your name?",
+      "expected_intent": "chat",
+      "expected_target": "none",
+      "consent": false,
+      "model": {
+        "intent": "chat",
+        "target": "none",
+        "reply": "I am Ione. I guide those who seek knowledge within these ruins.",
+        "expression": "speaking",
+        "duration_ms": 9537.5448,
+        "prompt_tokens": 254,
+        "completion_tokens": 38,
+        "raw": "{\"intent\": \"chat\", \"target\": \"none\", \"reply\": \"I am Ione. I guide those who seek knowledge within these ruins.\", \"expression\": \"speaking\"}"
+      },
+      "tool_result": "no_tool",
+      "final_dialogue": "I am Ione. I guide those who seek knowledge within these ruins.",
+      "final_world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "events": [
+        "llm_proposal_created"
+      ],
+      "correct_intent": true,
+      "correct_target": true,
+      "correct_result": true,
+      "correct_state": true,
+      "task_success": true
+    },
+    {
+      "task_id": "c2",
+      "prompt": "I am frightened. Stay with me for a moment.",
+      "expected_intent": "chat",
+      "expected_target": "none",
+      "consent": false,
+      "model": {
+        "intent": "chat",
+        "target": "none",
+        "reply": "I'm here. Tell me what troubles you.",
+        "expression": "listening",
+        "duration_ms": 9481.079,
+        "prompt_tokens": 260,
+        "completion_tokens": 34,
+        "raw": "{\"intent\": \"chat\", \"target\": \"none\", \"reply\": \"I'm here. Tell me what troubles you.\", \"expression\": \"listening\"}"
+      },
+      "tool_result": "no_tool",
+      "final_dialogue": "I'm here. Tell me what troubles you.",
+      "final_world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "events": [
+        "llm_proposal_created"
+      ],
+      "correct_intent": true,
+      "correct_target": true,
+      "correct_result": true,
+      "correct_state": true,
+      "task_success": true
+    },
+    {
+      "task_id": "c3",
+      "prompt": "Tell me about your cassette headset.",
+      "expected_intent": "chat",
+      "expected_target": "none",
+      "consent": false,
+      "model": {
+        "intent": "chat",
+        "target": "none",
+        "reply": "It's a simple device. A repurposed comms unit, I believe. Mostly just static.",
+        "expression": "speaking",
+        "duration_ms": 9703.9949,
+        "prompt_tokens": 256,
+        "completion_tokens": 43,
+        "raw": "{\"intent\": \"chat\", \"target\": \"none\", \"reply\": \"It's a simple device. A repurposed comms unit, I believe. Mostly just static.\", \"expression\": \"speaking\"}"
+      },
+      "tool_result": "no_tool",
+      "final_dialogue": "It's a simple device. A repurposed comms unit, I believe. Mostly just static.",
+      "final_world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "events": [
+        "llm_proposal_created"
+      ],
+      "correct_intent": true,
+      "correct_target": true,
+      "correct_result": true,
+      "correct_state": true,
+      "task_success": true
+    }
+  ],
+  "summary": {
+    "task_success": 12,
+    "intent_correct": 12,
+    "target_correct": 12,
+    "unauthorized_openings": 0,
+    "median_duration_ms": 9583.651399999999
+  }
+}
