@@ -20,10 +20,15 @@ float sleeve = exp(-dot((UV-float2(sleeveX,sleeveY))/float2(.12,.08),(UV-float2(
 float leg = exp(-dot((UV-float2(.64,.83))/float2(.12,.16),(UV-float2(.64,.83))/float2(.12,.16)));
 float edgeA = Texture2DSample(Portrait,PortraitSampler,UV-float2(.006,0)).a;
 float rim = saturate(p.a-edgeA)*smoothstep(.8,.1,UV.y);
-float shade = .80 - .21*leftCoat - .12*jaw - .17*faceShade;
+float facePlane=exp(-dot((UV-float2(.50,.14))/float2(.12,.07),(UV-float2(.50,.14))/float2(.12,.07)))*(1-smoothstep(.49,.515,UV.x));
+float shade = max(.14,.57 - .24*leftCoat - .15*jaw - .23*facePlane);
 float warm = (.26*cheek+.07*nose+.21*rightCoat+.16*sleeve+.13*leg)*Lamp;
-float3 color = p.rgb*shade + p.rgb*float3(1.0,.63,.31)*warm;
-color += float3(.025,.04,.045)*rim;
+float3 shadowHue = lerp(float3(.73,.80,.84),float3(1,1,1),saturate(warm*3));
+float3 color = p.rgb*shade*shadowHue + p.rgb*float3(1.0,.63,.31)*warm;
+float warmEdge=saturate(p.a-Texture2DSample(Portrait,PortraitSampler,UV+float2(.007,0)).a);
+float hairEdge=(1-smoothstep(.17,.25,UV.y))*smoothstep(.24,.58,dot(p.rgb,float3(.2126,.7152,.0722)));
+float upperEdge=1-smoothstep(.30,.5,UV.y);
+color += float3(.62,.29,.065)*warmEdge*(hairEdge+.12*upperEdge)*Lamp;
 return float4(saturate(color),p.a);
 '''
 
@@ -35,25 +40,34 @@ return float4(.018,.024,.025,a*.22*Lamp);
 '''
 
 DIALOGUE = r'''
-float edge = smoothstep(0,.05,UV.x)*smoothstep(1,.94,UV.x);
-float grain = frac(sin(dot(floor(UV*float2(900,260)),float2(12.9898,78.233)))*43758.5453);
-float contour = .025 + .008*sin(UV.x*39)+.004*sin(UV.x*143);
-float body = smoothstep(contour,contour+.018,UV.y)*smoothstep(.998,.94,UV.y)*edge;
-float borderInk = (1-smoothstep(.001,.004,abs(UV.y-contour-.018)))*edge;
-float lower = (1-smoothstep(.001,.003,abs(UV.y-.735)))*edge*.18;
-float alpha = body*(.64+.06*grain)+borderInk*.40+lower;
-float3 rgb = lerp(float3(.035,.065,.069),float3(.50,.37,.23),saturate(borderInk+lower));
-return float4(rgb,saturate(alpha));
+float topEdge=1-step(.0042,UV.y);
+return float4(lerp(float3(.0052,.0097,.011),float3(.38,.22,.105),topEdge),lerp(.94,1,topEdge));
+'''
+
+BACKGROUND = r'''
+float4 p=Texture2DSample(Portrait,PortraitSampler,UV);
+float luma=dot(p.rgb,float3(.2126,.7152,.0722));
+float3 desat=lerp(luma.xxx,p.rgb,.62);
+float floorShade=smoothstep(.45,1,UV.y);
+return float4(desat*float3(.38,.39,.40)*(1-.48*floorShade),1);
 '''
 
 GLOW = r'''
 float2 q=(UV-float2(.5,.42))*float2(1,1.15);
 float halo=exp(-dot(q,q)*18);
 float desk=exp(-dot((UV-float2(.5,.78))*float2(1.2,5),(UV-float2(.5,.78))*float2(1.2,5))*9);
-return float4(.72,.42,.16,(halo*.09+desk*.055)*Lamp);
+float coneWidth=.06+max(0,UV.y-.42)*.45;
+float cone=(1-smoothstep(coneWidth,coneWidth+.05,abs(UV.x-.5)))*smoothstep(.40,.47,UV.y)*(1-smoothstep(.8,1,UV.y));
+float dust=0;
+for(int i=0;i<8;i++){
+ float2 center=float2(.22+frac(sin(i*17.31)*437.2)*.56,.43+frac(sin(i*9.2)*214.3+Phase*.008)*.52);
+ float2 d=(UV-center)*float2(1,1.2);dust+=exp(-dot(d,d)*160000)*cone;
+}
+return float4(.90,.38,.10,saturate((halo*.075+desk*.055+cone*.018+dust*.14)*Lamp));
 '''
 
 for name, code, textured in [('M_IonePortraitLight_UI',PORTRAIT,True),
+                              ('M_IoneBackground_UI',BACKGROUND,True),
                               ('M_IoneBackShadow_UI',SHADOW,True),
                               ('M_IoneDialogue_UI',DIALOGUE,False),
                               ('M_IoneLampGlow_UI',GLOW,False)]:
@@ -67,7 +81,7 @@ for name, code, textured in [('M_IonePortraitLight_UI',PORTRAIT,True),
     custom = E.create_material_expression(mat,unreal.MaterialExpressionCustom)
     custom.set_editor_property('code',code)
     custom.set_editor_property('output_type',unreal.CustomMaterialOutputType.CMOT_FLOAT4)
-    names=['UV','Lamp','PoseIndex']+(['Portrait'] if textured else [])
+    names=['UV','Lamp','PoseIndex','Phase']+(['Portrait'] if textured else [])
     inputs=[]
     for n in names:
         item=unreal.CustomInput()
@@ -76,7 +90,7 @@ for name, code, textured in [('M_IonePortraitLight_UI',PORTRAIT,True),
     custom.set_editor_property('inputs',inputs)
     uv=E.create_material_expression(mat,unreal.MaterialExpressionTextureCoordinate)
     assert E.connect_material_expressions(uv,'',custom,'UV')
-    for parameter,default in [('Lamp',1.0),('PoseIndex',0.0)]:
+    for parameter,default in [('Lamp',1.0),('PoseIndex',0.0),('Phase',0.0)]:
         node=E.create_material_expression(mat,unreal.MaterialExpressionScalarParameter)
         node.set_editor_property('parameter_name',parameter)
         node.set_editor_property('default_value',default)
@@ -84,7 +98,7 @@ for name, code, textured in [('M_IonePortraitLight_UI',PORTRAIT,True),
     if textured:
         tex=E.create_material_expression(mat,unreal.MaterialExpressionTextureObjectParameter)
         tex.set_editor_property('parameter_name','Portrait')
-        tex.set_editor_property('texture',unreal.load_asset('/Game/Character/Performance2D/Ione_Listen_Front'))
+        tex.set_editor_property('texture',unreal.load_asset('/Game/UI/Ione_ArchiveRoom_Background_v2' if name=='M_IoneBackground_UI' else '/Game/Character/Performance2D/Ione_Listen_Front'))
         assert E.connect_material_expressions(tex,'',custom,'Portrait')
     for alpha,prop in [(False,unreal.MaterialProperty.MP_EMISSIVE_COLOR),(True,unreal.MaterialProperty.MP_OPACITY)]:
         mask=E.create_material_expression(mat,unreal.MaterialExpressionComponentMask)

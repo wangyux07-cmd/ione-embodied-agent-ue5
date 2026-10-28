@@ -17,6 +17,8 @@ Ione is a playable game NPC prototype set in a flooded wasteland archive. Player
 
 Try `东桥还能走吗？`, `红账本是谁的？`, or `打开档案室的门`. Ione checks routes and records against game tools; opening the archive door requires consent.
 
+Press **J** to open the Journal and **Esc** to close it. The screen uses the selected full-body illustration with 2D speaking, interruption and warning motion. Typography uses Georgia from Windows, with a built-in fallback when unavailable.
+
 The Agent bridge is in [`Tools/serve_ione_agent.py`](Tools/serve_ione_agent.py); the game runtime is in [`Plugins/AsterPerformanceRuntime/`](Plugins/AsterPerformanceRuntime/). Run `python -m pytest -q` for the Python tests.
 
 Session progress is saved locally in `Saved/ione_sessions.sqlite3`. The current UE client uses the default session. API clients can create an isolated session with `POST /session/new`, pass its `session_id` alongside `text` and `turn_id` to `POST /turn`, and resume it with `GET /session/{id}`. Keep the database when restarting the bridge; back it up before a database upgrade. Unsupported schema versions fail explicitly.

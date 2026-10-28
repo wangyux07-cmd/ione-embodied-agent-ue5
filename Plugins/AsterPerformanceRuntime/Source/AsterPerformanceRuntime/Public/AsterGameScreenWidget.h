@@ -28,11 +28,17 @@ public:
 protected:
     virtual void NativeOnInitialized() override;
     virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+    virtual FReply NativeOnPreviewKeyDown(const FGeometry& Geometry, const FKeyEvent& Event) override;
 
     UFUNCTION()
     void HandleInputCommitted(const FText& Text, ETextCommit::Type CommitMethod);
     UFUNCTION()
-    void ToggleReducedMotion();
+    void ToggleJournal();
+    UFUNCTION() void ShowStory();
+    UFUNCTION() void ShowObjectives();
+    UFUNCTION() void ShowClues();
+    UFUNCTION() void ShowMemories();
+    UFUNCTION() void ShowIone();
 
 private:
     UImage* AddImage(UCanvasPanel* Canvas, const TCHAR* Name, UTexture2D* Texture,
@@ -67,7 +73,14 @@ private:
     UPROPERTY(Transient)
     TObjectPtr<UMaterialInstanceDynamic> GlowMaterial;
     UPROPERTY(Transient)
-    TObjectPtr<UTextBlock> MotionLabel;
+    TObjectPtr<UCanvasPanel> JournalPanel;
+    UPROPERTY(Transient) TObjectPtr<UTextBlock> JournalHeading;
+    UPROPERTY(Transient) TObjectPtr<UTextBlock> JournalBody;
+    UPROPERTY(Transient) TObjectPtr<UTextBlock> JournalNote;
+    UPROPERTY(Transient) TObjectPtr<UTextBlock> ObjectiveText;
+    UPROPERTY(Transient) TObjectPtr<UImage> JournalUnderline;
+    UPROPERTY(Transient) TArray<TObjectPtr<UWidget>> DialogueWidgets;
+    void SetJournalPage(int32 Page);
     bool bReducedMotion = false;
     int32 ReviewPoseIndex = -1;
     bool bReviewCapturePending = false;
