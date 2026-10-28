@@ -1,8 +1,8 @@
 # Ione | Unreal Engine 5 NPC Agent
 
-Ione is a playable game NPC prototype set in a flooded wasteland archive. Players type to Ione in an Unreal Engine 5 dialogue window. A local Agent checks the game world and permissions, then returns a grounded reply and a matching character pose. The scene includes a hand-drawn background, a full-body character and an in-game dialogue panel.
+Ione is a playable game NPC prototype set in a flooded wasteland archive. Players type to Ione in an Unreal Engine 5 dialogue window. A local Agent checks the game world and permissions, then returns a grounded reply and a matching character pose. The scene includes a hand-drawn-style background, a full-body character and an in-game dialogue panel.
 
-![Ione answering a route question in the Unreal Engine game window](Reports/ue5_ione_live/route_warning.png)
+![Ione answering a route question in the Unreal Engine game window](Media/ione-gameplay.png)
 
 ## Run
 
@@ -17,4 +17,4 @@ Ione is a playable game NPC prototype set in a flooded wasteland archive. Player
 
 Try `东桥还能走吗？`, `红账本是谁的？`, or `打开档案室的门`. Ione checks routes and records against game tools; opening the archive door requires consent.
 
-The [experiment report](Reports/fast_agent_findings.md) contains the baseline comparison and raw traces. The [UE run record](Reports/ue5_ione_live/README.md) contains more screenshots and the five-case integration check. Source code for the bridge is in [`Tools/serve_ione_agent.py`](Tools/serve_ione_agent.py); the game runtime is in [`Plugins/AsterPerformanceRuntime/`](Plugins/AsterPerformanceRuntime/).
+The Agent bridge is in [`Tools/serve_ione_agent.py`](Tools/serve_ione_agent.py); the game runtime is in [`Plugins/AsterPerformanceRuntime/`](Plugins/AsterPerformanceRuntime/). Run `python -m pytest -q` for the Python tests.

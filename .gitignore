@@ -11,3 +11,16 @@ Binaries/
 .env
 .env.*
 *.log
+
+# Local planning, evaluations, application material and generated editor config
+Docs/
+Reports/
+DevNotes/
+Content/Character/Concept/
+Config/DefaultInput.ini
+AGENTS.md
+*CoverLetter*
+*cover-letter*
+*Resume*
+*resume*
+*简历*
