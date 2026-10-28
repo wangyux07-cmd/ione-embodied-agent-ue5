@@ -13,6 +13,7 @@ class UTextBlock;
 class UEditableText;
 class IHttpRequest;
 class IHttpResponse;
+class UMaterialInstanceDynamic;
 
 /** Player-facing 2.5D scene. All copy stays in editable UMG controls. */
 UCLASS()
@@ -30,6 +31,8 @@ protected:
 
     UFUNCTION()
     void HandleInputCommitted(const FText& Text, ETextCommit::Type CommitMethod);
+    UFUNCTION()
+    void ToggleReducedMotion();
 
 private:
     UImage* AddImage(UCanvasPanel* Canvas, const TCHAR* Name, UTexture2D* Texture,
@@ -53,6 +56,22 @@ private:
     TObjectPtr<UEditableText> InputText;
     UPROPERTY(Transient)
     TObjectPtr<UTextBlock> InputPromptText;
+    UPROPERTY(Transient)
+    TObjectPtr<UImage> BackShadow;
+    UPROPERTY(Transient)
+    TObjectPtr<UImage> LampGlow;
+    UPROPERTY(Transient)
+    TObjectPtr<UMaterialInstanceDynamic> PortraitLight;
+    UPROPERTY(Transient)
+    TObjectPtr<UMaterialInstanceDynamic> ShadowMaterial;
+    UPROPERTY(Transient)
+    TObjectPtr<UMaterialInstanceDynamic> GlowMaterial;
+    UPROPERTY(Transient)
+    TObjectPtr<UTextBlock> MotionLabel;
+    bool bReducedMotion = false;
+    int32 ReviewPoseIndex = -1;
+    bool bReviewCapturePending = false;
+    void UpdatePortraitLayers();
 
     void SubmitPlayerText(const FString& Text);
     void HandleAgentResponse(TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> Request,
