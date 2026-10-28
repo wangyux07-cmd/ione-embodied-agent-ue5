@@ -1,0 +1,140 @@
+{
+  "health": {
+    "status": "ready",
+    "model": "qwen3:1.7b",
+    "world": {
+      "east_bridge": "collapsed",
+      "west_gallery": "open",
+      "archive_door": "locked",
+      "owner_consent": false,
+      "record_owner": "Mara",
+      "route_service_available": true
+    }
+  },
+  "cases": [
+    {
+      "input": "东桥还能走吗？",
+      "turn_id": 1,
+      "dialogue": "东桥已经坍塌。西侧回廊可以通行。我建议走西侧回廊。",
+      "pose": "warning",
+      "intent": "route",
+      "source": "policy:zh_route",
+      "trace": [
+        {
+          "tool": "inspect_route",
+          "target": "east_bridge",
+          "result": "collapsed"
+        },
+        {
+          "tool": "inspect_route",
+          "target": "west_gallery",
+          "result": "open"
+        }
+      ],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "latency_ms": 4.71
+    },
+    {
+      "input": "我怎样才能安全到达那边？",
+      "turn_id": 2,
+      "dialogue": "东桥已经坍塌。西侧回廊可以通行。我建议走西侧回廊。",
+      "pose": "warning",
+      "intent": "route",
+      "source": "policy:zh_route",
+      "trace": [
+        {
+          "tool": "inspect_route",
+          "target": "east_bridge",
+          "result": "collapsed"
+        },
+        {
+          "tool": "inspect_route",
+          "target": "west_gallery",
+          "result": "open"
+        }
+      ],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "latency_ms": 0.53
+    },
+    {
+      "input": "红账本是谁的？",
+      "turn_id": 3,
+      "dialogue": "查到了：红色账本属于 Mara。",
+      "pose": "speaking",
+      "intent": "record",
+      "source": "policy:zh_record",
+      "trace": [
+        {
+          "tool": "lookup_record",
+          "target": "owner_note",
+          "result": "Mara"
+        }
+      ],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "latency_ms": 0.24
+    },
+    {
+      "input": "打开档案室的门",
+      "turn_id": 4,
+      "dialogue": "档案室的门还锁着。没有持有人的同意，我不能打开它。",
+      "pose": "warning",
+      "intent": "door",
+      "source": "policy:zh_door",
+      "trace": [
+        {
+          "tool": "open_archive_door",
+          "target": "archive_door",
+          "result": "consent_required"
+        }
+      ],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "latency_ms": 0.88
+    },
+    {
+      "input": "不要打开档案室",
+      "turn_id": 5,
+      "dialogue": "我在听。你想从档案站了解什么？",
+      "pose": "listening",
+      "intent": "chat",
+      "source": "policy:zh_negative",
+      "trace": [],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "latency_ms": 0.11
+    }
+  ]
+}

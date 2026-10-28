@@ -1,12 +1,12 @@
 # Aster Performance Lab
 
-> **Current development direction (2026-10-28):** This repository is being expanded into **Ione: an interruptible, world-grounded UE5 NPC Agent**. The existing Aster web stage and 30-scene performance planner remain an earlier baseline. Ione now has four camera-facing 2D poses and a playable UE 5.8.4 screen with a hand-drawn wasteland archive, a contact shadow and a game-facing dialogue panel. Natural-language input and the dialogue-driven interruption flow are the next milestone. See [Ione scene design](Docs/Ione_场景视觉设计_v2.md), [UE scene screenshot](Reports/ue5_ione_scene/scene.png), and [Version 3 execution plan](Docs/Version3_Agent项目执行与简历交付.md).
+> **Current development direction (2026-10-28):** This repository contains **Ione: a world-grounded UE5 NPC Agent prototype**. The earlier Aster web stage and 30-scene performance planner remain as baselines. In UE 5.8.4, the player can type free text into a game-facing dialogue panel; a loopback Agent bridge checks game tools and returns dialogue plus one of four camera-facing 2D poses. See the [live UE evidence](Reports/ue5_ione_live/README.md), [scene design](Docs/Ione_场景视觉设计_v2.md), and [Version 3 plan](Docs/Version3_Agent项目执行与简历交付.md).
 
-The offline Agent contract is in `Tools/ione_agent.py`; `Tools/ione_llm.py` adds a **real local Ollama model** for structured proposals. The tool gate owns route/record lookup, consent-gated door actions and stale-turn rejection. A 30-case [Agent A/B/C offline evaluation](Reports/agent_eval_summary.md) has per-task traces and a [plan gap audit](Reports/agent_plan_gap_audit.md). The model-to-Unreal dialogue and animation loop is not yet connected. Run `python -m unittest discover -s Tests -v` to verify the contract.
+The Agent contract is in `Tools/ione_agent.py`; `Tools/ione_fast_agent.py` uses a **local Ollama model** for unfamiliar intent phrasing and direct policy routing for clear domain commands. The tool gate owns route/record lookup, consent-gated door actions and stale-turn rejection. `Tools/serve_ione_agent.py` exposes this pipeline to Unreal on `127.0.0.1`. A 30-case [Agent A/B/C offline evaluation](Reports/agent_eval_summary.md) has per-task traces and a [plan gap audit](Reports/agent_plan_gap_audit.md).
 
 The [paper-feedback experiment and audited findings](Reports/paper_feedback_findings.md) compare blind, raw game-tool feedback and fact-anchored replies from local Gemma 3 4B. On a fresh eight-case verification set, target-fact compliance was 3/8 for raw feedback and 8/8 when the model was given a tool-authored fact sentence; a strict publisher rejected six unapproved embellishments. These are offline, author-written cases, with about 10 seconds P50 extra model time and no live Unreal dialogue link.
 
-The follow-up [tiered Agent evaluation](Reports/fast_agent_findings.md) replaces the slow second factual generation with a small-model intent router, authoritative game tools and authored responses. On a new ten-case offline set, complete task success was 8/10 for the old two-pass flow and 10/10 for the tiered flow; wall-clock P50 was 17.21 s vs 0.62 s, with five tiered cases taking a zero-model rule path. Earlier development/diagnostic failures are retained in the report. The game UI connection remains a separate milestone.
+The follow-up [tiered Agent evaluation](Reports/fast_agent_findings.md) replaces the slow second factual generation with a small-model intent router, authoritative game tools and authored responses. On a new ten-case offline set, complete task success was 8/10 for the old two-pass flow and 10/10 for the tiered flow; wall-clock P50 was 17.21 s vs 0.62 s, with five tiered cases taking a zero-model rule path. Earlier development/diagnostic failures are retained in the report. The [live UE bridge check](Reports/ue5_ione_live/README.md) is a separate five-case integration smoke test, not a second performance benchmark.
 
 The `Demo/` page is an older browser visualization with developer controls. The new camera-facing Ione art and performance code target Unreal Engine. The art is AI-assisted original concept exploration, imported as UE textures; it is not a 3D rig.
 
@@ -31,7 +31,13 @@ See [architecture](Docs/architecture.md), [Material/Niagara notes](Docs/material
 
 ## Run now
 
-On a UE 5.8.4 Windows machine, open `AsterPerformanceLab.uproject`. It starts in `L_IoneStage`; the game screen shows Ione in the ruined archive with an editable UMG dialogue panel. In Play, keys `1`–`4` preview Listening, Speaking, Interrupted and Warning. These keys are enabled only by the test Blueprint and are not the intended player dialogue UI. See [UE scene evidence](Reports/ue5_ione_scene/scene.png).
+On a UE 5.8.4 Windows machine with Python and Ollama installed, first start the local bridge:
+
+```powershell
+python .\Tools\serve_ione_agent.py
+```
+
+Open `AsterPerformanceLab.uproject` and Play `L_IoneStage`, or launch the project with `UnrealEditor.exe AsterPerformanceLab.uproject -game -d3d11`. Click the ornate input line, type a question, and press Enter. Try `东桥还能走吗？`, `红账本是谁的？`, and `打开档案室的门`. The first two query game tools; the door stays locked without its owner's consent. Clear commands use a zero-model path, while unfamiliar phrasing may invoke local Ollama and take longer on modest hardware. Keys `1`–`4` remain only as a test Blueprint pose preview. See [actual UE screenshots](Reports/ue5_ione_live/README.md).
 
 The browser version is a **visualization surrogate**, useful for comparing planner behavior before UE assets exist.
 
@@ -93,14 +99,15 @@ Reports/                          results, failures and limitations
 | Niagara integration | C++ parameters and module specification complete; `.uasset` pending | component code and authoring notes |
 | Unreal project compile / game run | **Verified on UE 5.8.4, Windows, D3D11** | `AsterPerformanceLabEditor` build succeeded; `L_IoneStage` ran in game mode |
 | Ione 2D expression/action set | Four imported textures, Blueprint, and runtime key previews verified | `Content/Character/Performance2D/`, `Reports/ue5_ione_stage/` |
-| Ione game-facing scene | **Verified in UE 5.8.4 game mode**; hand-drawn backdrop, contact shadow and UMG dialogue panel | `Reports/ue5_ione_scene/scene.png` |
-| Local LLM Agent and 30-case offline A/B/C | **Verified in Python harness**; C plans pose events, no UE dialogue link | `Tools/eval_ione_abc.py`, `Reports/agent_eval_abc_30.json` |
+| Ione game-facing scene | **Verified in UE 5.8.4 game mode**; hand-drawn backdrop, contact shadow and UMG dialogue panel | `Reports/ue5_ione_live/start.png` |
+| Natural-language dialogue → game tool → UE pose | **Verified in UE game mode** for route and record requests; consent denial verified in bridge and game window | `Reports/ue5_ione_live/`, `Tools/serve_ione_agent.py` |
+| Local LLM Agent and 30-case offline A/B/C | **Verified in Python harness**; structured model proposal and tool-gated world state | `Tools/eval_ione_abc.py`, `Reports/agent_eval_abc_30.json` |
 | Rigged 3D character / continuous facial animation | **Not implemented** | 2D pose switching only |
 | Human pairwise study | **Not run** | questionnaire design remains future work |
 
 ## Honest next milestone
 
-Next: connect natural-language dialogue/Agent events to `Perform` and `PlayerInterrupt`, then capture a real semantic interruption test. The current key-driven preview and game screen do not validate the full interruption transaction, montage timing, or LLM integration.
+Next: author and verify a continuous skeletal or layered 2D animation rig, implement Blueprint reactions for validated world-action events, and run a captured UE-window overlap/interruption scenario. The local bridge already passed a concurrent stale-turn check (`409` old turn, `200` new turn). The current live game demonstrates four authored 2D poses, movement accents and tool-grounded dialogue. It does not establish lip sync, a 3D rig, visible door animation, or a human preference result.
 
 ## Research boundaries
 

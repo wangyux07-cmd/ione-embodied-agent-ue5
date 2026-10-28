@@ -1,0 +1,35 @@
+{
+  "older": {
+    "status": 409,
+    "body": {
+      "error": "stale_turn",
+      "turn_id": 101
+    }
+  },
+  "newer": {
+    "status": 200,
+    "body": {
+      "turn_id": 102,
+      "dialogue": "查到了：红色账本属于 Mara。",
+      "pose": "speaking",
+      "intent": "record",
+      "source": "policy:zh_record",
+      "trace": [
+        {
+          "tool": "lookup_record",
+          "target": "owner_note",
+          "result": "Mara"
+        }
+      ],
+      "world": {
+        "east_bridge": "collapsed",
+        "west_gallery": "open",
+        "archive_door": "locked",
+        "owner_consent": false,
+        "record_owner": "Mara",
+        "route_service_available": true
+      },
+      "latency_ms": 0.07
+    }
+  }
+}

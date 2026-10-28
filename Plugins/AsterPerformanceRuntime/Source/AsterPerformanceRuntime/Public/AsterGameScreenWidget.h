@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/EditableText.h"
 #include "AsterNPCActor.h"
 #include "AsterGameScreenWidget.generated.h"
 
@@ -9,6 +10,9 @@ class UCanvasPanel;
 class UCanvasPanelSlot;
 class UImage;
 class UTextBlock;
+class UEditableText;
+class IHttpRequest;
+class IHttpResponse;
 
 /** Player-facing 2.5D scene. All copy stays in editable UMG controls. */
 UCLASS()
@@ -23,6 +27,9 @@ public:
 protected:
     virtual void NativeOnInitialized() override;
     virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+    UFUNCTION()
+    void HandleInputCommitted(const FText& Text, ETextCommit::Type CommitMethod);
 
 private:
     UImage* AddImage(UCanvasPanel* Canvas, const TCHAR* Name, UTexture2D* Texture,
@@ -40,8 +47,21 @@ private:
     TObjectPtr<UTextBlock> SpeakerText;
     UPROPERTY(Transient)
     TObjectPtr<UTextBlock> DialogueText;
+    UPROPERTY(Transient)
+    TObjectPtr<UTextBlock> ActionCueText;
+    UPROPERTY(Transient)
+    TObjectPtr<UEditableText> InputText;
+    UPROPERTY(Transient)
+    TObjectPtr<UTextBlock> InputPromptText;
+
+    void SubmitPlayerText(const FString& Text);
+    void HandleAgentResponse(TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> Request,
+        TSharedPtr<IHttpResponse, ESPMode::ThreadSafe> Response, bool bSucceeded, int32 ResponseSerial);
 
     EAsterPortraitPose LastPose = EAsterPortraitPose::Listening;
     float MotionTime = 0.0f;
     float PosePulse = 0.0f;
+    float CueSeconds = 0.0f;
+    int32 LatestRequestSerial = 0;
+    bool bRequestInFlight = false;
 };

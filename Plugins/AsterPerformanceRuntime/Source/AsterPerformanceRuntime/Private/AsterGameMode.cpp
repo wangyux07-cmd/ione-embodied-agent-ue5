@@ -14,6 +14,10 @@ void AAsterGameMode::BeginPlay()
     UAsterGameScreenWidget* Screen = CreateWidget<UAsterGameScreenWidget>(Player, UAsterGameScreenWidget::StaticClass());
     if (!Screen) return;
     Screen->AddToViewport();
+    FInputModeGameAndUI InputMode;
+    InputMode.SetWidgetToFocus(Screen->TakeWidget());
+    Player->SetInputMode(InputMode);
+    Player->bShowMouseCursor = true;
     for (TActorIterator<AAsterNPCActor> It(GetWorld()); It; ++It)
     {
         AAsterNPCActor* Ione = *It;
