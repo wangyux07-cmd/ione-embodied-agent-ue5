@@ -22,6 +22,7 @@ from ione_fast_agent import (
 from ione_llm import infer
 from ione_sessions import SessionStore, StaleTurn, quest_view
 from ione_controller import Controller
+from ione_story_router import infer_story_plan
 
 
 HOST, PORT = "127.0.0.1", 8765
@@ -54,14 +55,14 @@ def chinese_policy(text: str) -> FastPlan | None:
     return None
 
 
-def route_plan(text: str) -> tuple[FastPlan, str]:
+def route_plan(text: str, state=None) -> tuple[FastPlan, str]:
     plan = chinese_policy(text) or preplan_explicit_negative(text) or preplan_domain_action(text)
     if plan is not None:
         return plan, plan.raw
-    plan = infer_fast_plan(text, model=MODEL)
+    plan = infer_story_plan(text, state=state, model=MODEL)
     plan, repair = repair_route_intent(text, plan)
-    source = "small_model" if repair == "unchanged" else repair
-    if needs_large_router(text, plan):
+    source = "story_intent_model" if repair == "unchanged" else repair
+    if plan.intent in {'route','door','record','chat'} and needs_large_router(text, plan):
         large = infer(text, model="gemma3:4b")
         intent = {"inspect_route": "route", "open_archive_door": "door",
                   "lookup_record": "record", "chat": "chat"}.get(large.intent, "chat")
@@ -164,7 +165,8 @@ class Handler(BaseHTTPRequestHandler):
 def make_server(port=PORT, db_path=None, router=route_plan):
     server = ThreadingHTTPServer((HOST, port), Handler)
     store = SessionStore(db_path or Path(__file__).resolve().parents[1] / 'Saved/ione_sessions.sqlite3')
-    server.controller = Controller(store, router, localized_dialogue)
+    server.controller = Controller(store, router, localized_dialogue,
+                                   context_router=route_plan if router is route_plan else None)
     return server
 
 

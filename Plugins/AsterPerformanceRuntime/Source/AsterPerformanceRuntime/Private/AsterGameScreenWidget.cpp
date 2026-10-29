@@ -22,6 +22,7 @@
 #include "Misc/Parse.h"
 #include "UnrealClient.h"
 #include "Misc/Paths.h"
+#include "Misc/FileHelper.h"
 #include "InputCoreTypes.h"
 
 namespace IoneStyle
@@ -121,7 +122,7 @@ void UAsterGameScreenWidget::NativeOnInitialized()
     UImage* ObjectiveRule=AddImage(Canvas,TEXT("ObjectiveRule"),nullptr,FVector2D(858,115),FVector2D(2,128)); ObjectiveRule->SetColorAndOpacity(IoneStyle::Color(168,130,89));
     AddText(Canvas, TEXT("ObjectiveLabel"), TEXT("CURRENT OBJECTIVE"), FVector2D(880, 123), FVector2D(330, 22), 13, Paper);
     ObjectiveText=AddText(Canvas, TEXT("Objective"), TEXT("Find the first public lead to your sister’s recording."), FVector2D(880, 156), FVector2D(350, 77), 20, Paper);
-    AddText(Canvas, TEXT("Chapter"), TEXT("Chapter I · First Contact"), FVector2D(880, 239), FVector2D(330, 24), 13, Muted);
+    ChapterText=AddText(Canvas, TEXT("Chapter"), TEXT("Chapter I · First Contact"), FVector2D(880, 239), FVector2D(330, 24), 13, Muted);
     SpeakerText = AddText(Canvas, TEXT("Speaker"), TEXT("Ione"), FVector2D(524,470), FVector2D(90,30), 21, IoneStyle::Color(211,179,139));
     UImage* NameRule=AddImage(Canvas,TEXT("NameRule"),nullptr,FVector2D(590,483),FVector2D(614,1)); NameRule->SetColorAndOpacity(IoneStyle::Color(168,130,89,.27f));
     DialogueText = AddText(Canvas, TEXT("Dialogue"), TEXT("You’re looking for a voice. We can start with the public index.\nWhat do you remember about her last message?"), FVector2D(524,512), FVector2D(680,83), 19, Paper);
@@ -178,6 +179,83 @@ void UAsterGameScreenWidget::NativeOnInitialized()
     Solid(TEXT("JournalNoteRule"),FVector2D(36,324),FVector2D(590,1),IoneStyle::Color(168,130,89,.2f));
     JournalNote=AddText(JournalPanel,TEXT("JournalNote"),TEXT(""),FVector2D(36,347),FVector2D(630,90),14,Muted);
     SetJournalPage(1);JournalPanel->SetVisibility(ESlateVisibility::Collapsed);SetIsFocusable(true);
+    InitializeSession();
+}
+
+void UAsterGameScreenWidget::InitializeSession()
+{
+    if(bSessionLoading)return;
+    bSessionLoading=true;bSessionReady=false;
+    InputText->SetIsEnabled(false);
+    const FString SavePath=FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("IoneClientSession.txt"));
+    if(SessionId.IsEmpty())FFileHelper::LoadFileToString(SessionId,*SavePath);
+    SessionId=SessionId.TrimStartAndEnd();
+    const bool bNew=SessionId.IsEmpty();
+    TSharedRef<IHttpRequest,ESPMode::ThreadSafe> Request=FHttpModule::Get().CreateRequest();
+    Request->SetURL(bNew?TEXT("http://127.0.0.1:8765/session/new"):
+        FString(TEXT("http://127.0.0.1:8765/session/"))+SessionId);
+    Request->SetVerb(bNew?TEXT("POST"):TEXT("GET"));Request->SetTimeout(5.f);
+    Request->OnProcessRequestComplete().BindWeakLambda(this,[this,bNew,SavePath]
+        (FHttpRequestPtr, FHttpResponsePtr Response,bool bSucceeded)
+    {
+        bSessionLoading=false;
+        TSharedPtr<FJsonObject> Body;
+        if(!bSucceeded||!Response.IsValid()||(Response->GetResponseCode()!=200&&Response->GetResponseCode()!=201)
+            ||!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Response->GetContentAsString()),Body)||!Body.IsValid())
+        {
+            InputText->SetIsEnabled(true);
+            SetDialogue(TEXT("Ione"),TEXT("I cannot reach your archive journal. Start the local archive service, then press Enter to reconnect."));
+            return;
+        }
+        if(bNew)
+        {
+            if(!Body->TryGetStringField(TEXT("session_id"),SessionId)||SessionId.IsEmpty())
+            {
+                InputText->SetIsEnabled(true);SetDialogue(TEXT("Ione"),TEXT("I could not open that journal. Please try again."));return;
+            }
+            FFileHelper::SaveStringToFile(SessionId,*SavePath);
+            InitializeSession();return;
+        }
+        ApplyQuestState(Body);bSessionReady=true;InputText->SetIsEnabled(true);
+        UE_LOG(LogTemp,Display,TEXT("IoneSessionRestored session=%s objective=%s"),*SessionId,*CurrentObjective);
+    });
+    if(!Request->ProcessRequest())
+    {
+        bSessionLoading=false;InputText->SetIsEnabled(true);
+        SetDialogue(TEXT("Ione"),TEXT("The archive connection could not start. Press Enter to reconnect."));
+    }
+}
+
+void UAsterGameScreenWidget::ApplyQuestState(const TSharedPtr<FJsonObject>& Body)
+{
+    const TSharedPtr<FJsonObject>* Quest=nullptr;
+    if(!Body->TryGetObjectField(TEXT("quest_state"),Quest)||!Quest||!Quest->IsValid())return;
+    if((*Quest)->TryGetStringField(TEXT("objective"),CurrentObjective))
+        ObjectiveText->SetText(FText::FromString(CurrentObjective));
+    double Chapter=1;
+    if((*Quest)->TryGetNumberField(TEXT("chapter"),Chapter))
+    {
+        const TCHAR* Chapters[]={TEXT("Chapter I · First Contact"),TEXT("Chapter II · Broken Signal"),
+            TEXT("Chapter III · A Matter of Trust"),TEXT("Chapter IV · The Hidden Recording")};
+        ChapterText->SetText(FText::FromString(Chapters[FMath::Clamp(static_cast<int32>(Chapter)-1,0,3)]));
+        if(UTextBlock* Tag=Cast<UTextBlock>(WidgetTree->FindWidget(FName(TEXT("JournalTag")))))
+            Tag->SetText(ChapterText->GetText());
+    }
+    const TSharedPtr<FJsonObject>* Journal=nullptr;
+    if((*Quest)->TryGetObjectField(TEXT("journal"),Journal)&&Journal&&Journal->IsValid())
+    {
+        auto ReadLines=[Journal](const TCHAR* Name)
+        {
+            TArray<FString> Lines;const TArray<TSharedPtr<FJsonValue>>* Values=nullptr;
+            if((*Journal)->TryGetArrayField(Name,Values))
+                for(const TSharedPtr<FJsonValue>& Value:*Values)
+                {FString Line;if(Value->TryGetString(Line))Lines.Add(Line);}
+            return FString::Join(Lines,TEXT("\n\n"));
+        };
+        VerifiedClues=ReadLines(TEXT("clues"));SharedMemories=ReadLines(TEXT("memories"));
+        (*Journal)->TryGetStringField(TEXT("relationship"),RelationshipStage);
+    }
+    SetJournalPage(ActiveJournalPage);
 }
 
 void UAsterGameScreenWidget::ToggleJournal()
@@ -197,10 +275,32 @@ FReply UAsterGameScreenWidget::NativeOnPreviewKeyDown(const FGeometry& Geometry,
 void UAsterGameScreenWidget::ShowStory(){SetJournalPage(0);} void UAsterGameScreenWidget::ShowObjectives(){SetJournalPage(1);} void UAsterGameScreenWidget::ShowClues(){SetJournalPage(2);} void UAsterGameScreenWidget::ShowMemories(){SetJournalPage(3);} void UAsterGameScreenWidget::ShowIone(){SetJournalPage(4);}
 void UAsterGameScreenWidget::SetJournalPage(int32 Page)
 {
+    ActiveJournalPage=FMath::Clamp(Page,0,4);Page=ActiveJournalPage;
     const TCHAR* Headings[]={TEXT("A voice in the archive"),TEXT("Find the first public lead"),TEXT("No verified clues yet"),TEXT("Your search begins here"),TEXT("The sound restorer")};
     const TCHAR* Bodies[]={TEXT("The flood left the city with broken routes and scattered voices. Your sister’s final recording may be inside this archive."),TEXT("Ask Ione to check the public dispatch index for your sister’s recording."),TEXT("Clues appear here after the archive checks their source."),TEXT("You have arrived at the Archive of Forgotten Voices."),TEXT("Ione repairs damaged recordings and guides visitors through the archive.")};
     const TCHAR* Notes[]={TEXT("Ione can help you trace what the public records still know."),TEXT("Next step: type a question in the dialogue box."),TEXT("Ask Ione about the public dispatch index to begin."),TEXT("Shared events will appear as you and Ione work through the archive."),TEXT("She shares public leads and protects private voices.")};
     JournalHeading->SetText(FText::FromString(Headings[Page]));JournalBody->SetText(FText::FromString(Bodies[Page]));JournalNote->SetText(FText::FromString(Notes[Page]));
+    if(Page==1&&!CurrentObjective.IsEmpty())
+    {
+        JournalHeading->SetText(FText::FromString(TEXT("Current objective")));
+        JournalBody->SetText(FText::FromString(CurrentObjective));
+    }
+    if(Page==2&&!VerifiedClues.IsEmpty())
+    {
+        JournalHeading->SetText(FText::FromString(TEXT("Verified clues")));
+        JournalBody->SetText(FText::FromString(VerifiedClues));
+        JournalNote->SetText(FText::FromString(TEXT("These clues come from verified archive events.")));
+    }
+    if(Page==3&&!SharedMemories.IsEmpty())
+    {
+        JournalHeading->SetText(FText::FromString(TEXT("Shared events")));
+        JournalBody->SetText(FText::FromString(SharedMemories));
+        JournalNote->SetText(FText::FromString(TEXT("Verified events from this saved session.")));
+    }
+    if(Page==4&&!RelationshipStage.IsEmpty())
+        JournalNote->SetText(FText::FromString(FString(TEXT("Relationship: "))+RelationshipStage));
+    if(UCanvasPanelSlot* BodySlot=Cast<UCanvasPanelSlot>(JournalBody->Slot))BodySlot->SetSize(FVector2D(630,240));
+    if(UCanvasPanelSlot* NoteSlot=Cast<UCanvasPanelSlot>(JournalNote->Slot))NoteSlot->SetPosition(FVector2D(36,520));
     const float X[]={36,91,177,234,321},Width[]={55,86,57,87,55};UCanvasPanelSlot* S=Cast<UCanvasPanelSlot>(JournalUnderline->Slot);S->SetPosition(FVector2D(X[Page],128));S->SetSize(FVector2D(Width[Page],2));
 }
 
@@ -245,6 +345,26 @@ void UAsterGameScreenWidget::NativeTick(const FGeometry& MyGeometry, const float
     MotionTime += InDeltaTime;
 #if !UE_BUILD_SHIPPING
     // Explicit authoring launch option; no debug controls are shown in the game UI.
+    if(FParse::Param(FCommandLine::Get(),TEXT("IoneRuntimeReview"))&&bSessionReady&&MotionTime>=5.f)
+    {
+        if(RuntimeReviewStep==0)
+        {
+            RuntimeReviewStep=1;
+            SubmitPlayerText(TEXT("Can you check the public archive for my sister?"));
+        }
+        else if(RuntimeReviewStep==1&&!bRequestInFlight)
+        {
+            RuntimeReviewStep=2;RuntimeReviewReadyTime=MotionTime;
+            FScreenshotRequest::RequestScreenshot(TEXT("IoneRuntime_Objective"),true,true);
+            UE_LOG(LogTemp,Display,TEXT("IoneRuntimeReview session=%s objective=%s"),*SessionId,*CurrentObjective);
+        }
+        else if(RuntimeReviewStep==2&&MotionTime-RuntimeReviewReadyTime>2.f)
+        {
+            RuntimeReviewStep=3;SetJournalPage(2);ToggleJournal();
+            FScreenshotRequest::RequestScreenshot(TEXT("IoneRuntime_Clues"),true,true);
+            UE_LOG(LogTemp,Display,TEXT("IoneRuntimeReview clues=%s"),*VerifiedClues);
+        }
+    }
     if (Character && FParse::Param(FCommandLine::Get(), TEXT("IoneVisualReview")) && MotionTime >= 20.0f)
     {
         const int32 Index = FMath::FloorToInt((MotionTime-20.0f)/4.0f);
@@ -321,6 +441,10 @@ void UAsterGameScreenWidget::HandleInputCommitted(const FText& Text, const EText
 
 void UAsterGameScreenWidget::SubmitPlayerText(const FString& Text)
 {
+    if(!bSessionReady)
+    {
+        InputText->SetText(FText::FromString(Text));InitializeSession();return;
+    }
     if (bRequestInFlight && Character) Character->PlayerInterrupt(Text);
     bRequestInFlight = true;
     ++LatestRequestSerial;
@@ -337,12 +461,18 @@ void UAsterGameScreenWidget::SubmitPlayerText(const FString& Text)
     TSharedRef<FJsonObject> Body = MakeShared<FJsonObject>();
     Body->SetStringField(TEXT("text"), Text);
     Body->SetNumberField(TEXT("turn_id"), SentSerial);
+    Body->SetStringField(TEXT("session_id"),SessionId);
     FString Json;
     const TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Json);
     FJsonSerializer::Serialize(Body, Writer);
     Request->SetContentAsString(Json);
     Request->OnProcessRequestComplete().BindUObject(this, &UAsterGameScreenWidget::HandleAgentResponse, SentSerial);
-    Request->ProcessRequest();
+    if(!Request->ProcessRequest())
+    {
+        bRequestInFlight=false;
+        SetDialogue(TEXT("Ione"),TEXT("The archive connection could not start. Please try again."));
+        if(Character)Character->SetPortraitPose(EAsterPortraitPose::Warning);
+    }
 }
 
 void UAsterGameScreenWidget::HandleAgentResponse(TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> /*Request*/,
@@ -366,6 +496,7 @@ void UAsterGameScreenWidget::HandleAgentResponse(TSharedPtr<IHttpRequest, ESPMod
         return;
     }
     SetDialogue(TEXT("Ione"), Body->GetStringField(TEXT("dialogue")));
+    ApplyQuestState(Body);
     const FString Pose = Body->GetStringField(TEXT("pose"));
     if (Character)
     {

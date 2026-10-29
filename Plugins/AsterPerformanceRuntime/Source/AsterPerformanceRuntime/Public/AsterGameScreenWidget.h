@@ -14,6 +14,7 @@ class UEditableText;
 class IHttpRequest;
 class IHttpResponse;
 class UMaterialInstanceDynamic;
+class FJsonObject;
 
 /** Player-facing 2.5D scene. All copy stays in editable UMG controls. */
 UCLASS()
@@ -78,9 +79,22 @@ private:
     UPROPERTY(Transient) TObjectPtr<UTextBlock> JournalBody;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> JournalNote;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> ObjectiveText;
+    UPROPERTY(Transient) TObjectPtr<UTextBlock> ChapterText;
     UPROPERTY(Transient) TObjectPtr<UImage> JournalUnderline;
     UPROPERTY(Transient) TArray<TObjectPtr<UWidget>> DialogueWidgets;
     void SetJournalPage(int32 Page);
+    void InitializeSession();
+    void ApplyQuestState(const TSharedPtr<FJsonObject>& Body);
+    FString SessionId;
+    FString CurrentObjective;
+    FString VerifiedClues;
+    FString SharedMemories;
+    FString RelationshipStage;
+    int32 ActiveJournalPage = 1;
+    bool bSessionReady = false;
+    bool bSessionLoading = false;
+    int32 RuntimeReviewStep = 0;
+    float RuntimeReviewReadyTime = 0.f;
     bool bReducedMotion = false;
     int32 ReviewPoseIndex = -1;
     bool bReviewCapturePending = false;

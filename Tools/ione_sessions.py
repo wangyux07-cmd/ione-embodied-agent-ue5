@@ -44,8 +44,19 @@ def advance(state, event, source):
 def quest_view(state):
     flags = set(state['quest']['completed_flags'])
     chapter = next((c for c in QUEST['chapters'] if not set(c['required_events']) <= flags), QUEST['chapters'][-1])
-    return {**state['quest'], 'chapter': chapter['number'],
-            'objective': STRINGS['objectives'][chapter['objective_id']],
+    complete = 'final_recording_recovered' in flags
+    objective = ('Your sister’s authorized recording has been recovered.' if complete else
+                 STRINGS['objectives'][chapter['objective_id']])
+    clue_events = {'lead_discovered':'public_lead', 'relay_diagnosed':'relay_fault',
+                   'public_evidence_collected':'public_seal','access_authorized':'authorization'}
+    clues = [STRINGS['clues'][clue] for event,clue in clue_events.items() if event in flags]
+    memories = [event.replace('_',' ').capitalize() for event in state['quest']['completed_flags']]
+    return {**state['quest'], 'chapter': chapter['number'], 'completed':complete,
+            'objective': objective,
+            'journal': {'story':STRINGS['journal']['story_open'], 'objective':objective,
+                        'clues':clues, 'memories':memories,
+                        'character':STRINGS['journal']['character_open'],
+                        'relationship':state['relationship']['stage']},
             'events': [{'id': e['id'], 'completed': e['id'] in flags,
                         'available': set(e['requires']) <= flags,
                         'blocked_reason': e['blocked_reason'], 'hint_id': e['hint_id']}

@@ -34,8 +34,9 @@ REPLIES = {
 
 
 class Controller:
-    def __init__(self, store, router, localize):
+    def __init__(self, store, router, localize, context_router=None):
         self.store, self.router, self.localize = store, router, localize
+        self.context_router = context_router
 
     def turn(self, data):
         text, turn_id = data['text'], data['turn_id']
@@ -45,7 +46,13 @@ class Controller:
             raise ValueError('invalid_action')
         started = time.perf_counter()
         version = self.store.begin_turn(sid)
-        plan, source = self.router(text) if action is None else (None, 'structured_game_action')
+        if action is None:
+            plan, source = (self.context_router(text, self.store.read(sid)[1])
+                            if self.context_router else self.router(text))
+            if plan.intent in ACTION or plan.intent in CHOICES:
+                action = plan.intent
+        else:
+            plan, source = None, 'structured_game_action'
         routed = time.perf_counter()
 
         def execute(state):
@@ -96,6 +103,7 @@ class Controller:
                     'quest_state': quest_view(state), 'journal_delta': delta,
                     'relationship': state['relationship'], 'trace_id': uuid.uuid4().hex,
                     'model_version': 'authored' if action else source, 'state_version': version,
+                    'response_path': 'authored_tool_result',
                     'timings': {'routing_ms': round((routed-started)*1000, 2)},
                     'latency_ms': round((time.perf_counter()-started)*1000, 2)}
 
