@@ -18,3 +18,9 @@ class PrecisionPolicyTests(unittest.TestCase):
         self.assertEqual(precision_for_phase('pilot', False), 'fp32')
         self.assertEqual(precision_for_phase('smoke', False), 'fp16')
         self.assertEqual(precision_for_phase('pilot', True), 'bf16')
+
+    def test_combined_batch_can_pin_fp32_on_any_gpu(self):
+        self.assertEqual(precision_for_phase('pilot', True, forced='fp32'), 'fp32')
+        self.assertEqual(precision_for_phase('pilot', False, forced='fp32'), 'fp32')
+        with self.assertRaisesRegex(ValueError, 'Unsupported'):
+            precision_for_phase('pilot', True, forced='unknown')

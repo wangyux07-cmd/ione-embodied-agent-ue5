@@ -29,8 +29,10 @@ def gpu_bf16():
                            torch.cuda.is_bf16_supported(including_emulation=False))
 
 
-def precision_for_phase(phase, native_bf16):
+def precision_for_phase(phase, native_bf16, forced='auto'):
     # A T4 pilot uses full precision to avoid FP16 range/gradient scaling failures.
+    if forced == 'fp32': return 'fp32'
+    if forced != 'auto': raise ValueError('Unsupported precision override')
     if native_bf16:
         return 'bf16'
     return 'fp32' if phase == 'pilot' else 'fp16'
@@ -170,6 +172,7 @@ def main():
     parser.add_argument('--bundle', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--smoke-result', type=Path)
+    parser.add_argument('--precision', choices=('auto', 'fp32'), default='auto')
     args = parser.parse_args()
     import torch
     import transformers, trl, peft, datasets, accelerate
@@ -192,13 +195,13 @@ def main():
     dev = [] if args.phase == 'smoke' else [r for r in rows if r['split'] == 'dev']
     args.output.mkdir(parents=True)
     set_seed(42)
-    precision = precision_for_phase(args.phase, gpu_bf16())
+    precision = precision_for_phase(args.phase, gpu_bf16(), args.precision)
     dtype = {'bf16': torch.bfloat16, 'fp16': torch.float16, 'fp32': torch.float32}[precision]
     report = {'phase': args.phase, 'model': model_id, 'revision': revision, 'seed': 42,
               'scope': 'training mechanics smoke' if args.phase == 'smoke' else 'small SFT pilot; loss is not quality evidence',
               'gpu': torch.cuda.get_device_name(), 'gpu_total_bytes': torch.cuda.get_device_properties(0).total_memory,
               'dtype': str(dtype), 'cuda': torch.version.cuda,
-              'precision_policy': 'native bf16; otherwise FP16 smoke and FP32 pilot',
+              'precision_policy': 'explicit FP32 for matched evaluation' if args.precision == 'fp32' else 'native bf16; otherwise FP16 smoke and FP32 pilot',
               'gpu_compute_capability': list(torch.cuda.get_device_capability()),
               'native_bf16': gpu_bf16(),
               'versions': {m.__name__: m.__version__ for m in (torch, transformers, trl, peft, datasets, accelerate)},

@@ -15,6 +15,52 @@ from train_ione_sft import smoke_rows
 
 
 class ColabPackageTests(unittest.TestCase):
+    def run_combined_flow(self, fail_pilot):
+        source = ''.join(notebook_cells('0' * 64, with_dev_eval=True)[5]['source'])
+        commands = []; downloads = []
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'bundle').mkdir()
+            (root / 'bundle/sft_dev_canonical.jsonl').write_text('fixture')
+            class Process:
+                def __init__(self, command, **kwargs):
+                    commands.append(command)
+                    phase = command[command.index('--phase') + 1] if '--phase' in command else 'evaluation'
+                    self.failed = fail_pilot and phase == 'pilot'
+                    self.stdout = iter([phase + '\n'])
+                    if not self.failed:
+                        output = Path(command[command.index('--output') + 1])
+                        output.mkdir(parents=True)
+                        (output / 'result.json').write_text('{}')
+                        if phase == 'pilot':
+                            (output / 'adapter').mkdir()
+                            for name in ('adapter_config.json', 'adapter_model.safetensors'):
+                                (output / 'adapter' / name).write_text('fixture')
+                def wait(self): return int(self.failed)
+            namespace = {'root': root, 'sys': types.SimpleNamespace(executable='python'), 'json': json,
+                         'subprocess': types.SimpleNamespace(Popen=Process, PIPE=-1, STDOUT=-2, run=lambda *a, **k: None),
+                         'files': types.SimpleNamespace(download=downloads.append)}
+            with patch('shutil.make_archive', return_value='fixture.zip'):
+                if fail_pilot:
+                    with self.assertRaisesRegex(RuntimeError, 'pilot'):
+                        exec(source, namespace)
+                else:
+                    exec(source, namespace)
+        return commands, downloads
+
+    def test_combined_success_runs_eval_then_downloads(self):
+        commands, downloads = self.run_combined_flow(False)
+        self.assertEqual(len(commands), 3)
+        self.assertTrue(commands[-1][2].endswith('eval_ione_adapter.py'))
+        self.assertEqual(commands[1][-2:], ['--precision', 'fp32'])
+        self.assertEqual(downloads, ['/content/ione_results.zip'])
+
+    def test_combined_failed_pilot_stops_eval_and_still_downloads_logs(self):
+        commands, downloads = self.run_combined_flow(True)
+        self.assertEqual(len(commands), 2)
+        self.assertFalse(any(c[2].endswith('eval_ione_adapter.py') for c in commands))
+        self.assertEqual(downloads, ['/content/ione_results.zip'])
+
     def test_prior_smoke_requires_passed_matching_bundle(self):
         from test_sft_preflight import FrozenBundleTests
         with tempfile.TemporaryDirectory() as directory:
@@ -58,9 +104,10 @@ class ColabPackageTests(unittest.TestCase):
                 exec(source, {})
 
     def test_notebook_python_cells_compile(self):
-        for index, cell in enumerate(notebook_cells('0' * 64)):
-            if cell['cell_type'] == 'code':
-                compile(''.join(cell['source']), f'cell{index}', 'exec')
+        for mode in (False, True):
+            for index, cell in enumerate(notebook_cells('0' * 64, with_dev_eval=mode)):
+                if cell['cell_type'] == 'code':
+                    compile(''.join(cell['source']), f'cell{index}', 'exec')
 
     def test_mechanics_fixtures_are_separate(self):
         rows = smoke_rows()
@@ -92,3 +139,10 @@ class ColabPackageTests(unittest.TestCase):
             self.assertTrue(all(not c.get('outputs') for c in book['cells']))
             with self.assertRaisesRegex(ValueError, 'new output'):
                 package(bundle, output)
+            combined = root / 'combined'
+            combined_files = package(bundle, combined, with_dev_eval=True)
+            self.assertEqual(set(combined_files), expected | {'Tools/eval_ione_adapter.py'})
+            book = json.loads((combined / 'Ione_Free_GPU_Trial.ipynb').read_text(encoding='utf-8'))
+            source = ''.join(book['cells'][5]['source'])
+            self.assertLess(source.index("run_phase('pilot'"), source.index('evaluation_command ='))
+            self.assertLess(source.index('evaluation_command ='), source.index('files.download('))

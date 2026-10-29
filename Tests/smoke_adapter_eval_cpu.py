@@ -55,6 +55,13 @@ def main():
     assert result['training_steps'] == 0 and result['raw_responses'] == 4
     assert len(observed_sampling) == 6 and not any(observed_sampling), observed_sampling
     assert all(r['generation_kwargs']['use_model_defaults'] is False for r in records)
+    from eval_ione_frozen_hf import generate_one
+    one = generate_one(model, tokenizer, row['prompt'], warmup=True)
+    two = generate_one(model, tokenizer, row['prompt'], warmup=True)
+    sampled = generate_one(model, tokenizer, row['prompt'], sample=True, seed=1000, warmup=True)
+    assert one['new_token_ids'] == two['new_token_ids'] and not one['generation_kwargs']['do_sample']
+    assert sampled['generation_kwargs']['do_sample'] and sampled['seed'] == 1000
+    assert all(torch.equal(before[n], p.detach()) for n, p in model.named_parameters())
     (args.output / 'generation_policy_test.json').write_text(json.dumps({
         'legacy_model_default_overrides_false': legacy.do_sample,
         'actual_generate_prepared_do_sample': observed_sampling,

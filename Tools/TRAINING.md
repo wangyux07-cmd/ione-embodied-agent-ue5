@@ -6,6 +6,8 @@ Build a Colab notebook and upload archive from an approved SFT bundle:
 python Tools/package_ione_colab.py --bundle PATH_TO_FROZEN_BUNDLE --output NEW_OUTPUT_DIRECTORY
 ```
 
+Add `--with-dev-eval` to run matched Base/SFT development inference after the pilot's checkpoint reload, then download training and evaluation results together. The frozen test set stays outside this pilot batch.
+
 The bundle contains `manifest.json`, `sft_train_canonical.jsonl`, `sft_dev_canonical.jsonl`, `sft_train.jsonl` and `sft_dev.jsonl`. The manifest records `status: approved_frozen`, `counts.SFT_train`, `counts.SFT_dev`, `heldout_sha256` and SHA-256 values in `files_sha256`. Canonical records follow `ione_data_pipeline.py`; exports use TRL conversational prompt/completion format. Keep data and generated results in a private local directory such as `Saved/`.
 
 Upload the generated notebook to [Colab](https://colab.research.google.com/), select a free GPU runtime and run all cells. At the upload prompt, select the matching `ione_colab_bundle.zip`. The notebook verifies its hash, installs `requirements-m6-colab.txt` and keeps Colab's CUDA-enabled PyTorch.

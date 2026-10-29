@@ -34,10 +34,10 @@ print('上传包校验通过:', upload_name, '→', root)
 '''
 
 
-def notebook_cells(archive_hash):
+def notebook_cells(archive_hash, with_dev_eval=False):
     def md(text): return {'cell_type': 'markdown', 'metadata': {}, 'source': text.splitlines(True)}
     def code(text): return {'cell_type': 'code', 'metadata': {}, 'execution_count': None, 'outputs': [], 'source': text.splitlines(True)}
-    return [md('# Ione · 免费 GPU 训练试跑\n\n1. 菜单「运行时 → 更改运行时类型」选择免费 GPU。\n2. 点击「运行时 → 全部运行」，上传同目录的 `ione_colab_bundle.zip`。\n3. 完成后下载结果；确认文件保存后断开运行时。\n\n预算 $0，不购买套餐。免费 GPU 不可用时停止。数据留在私有会话，不开启共享或发布模型。Notebook 不挂载 Drive。'),
+    cells = [md('# Ione · 免费 GPU 训练试跑\n\n1. 菜单「运行时 → 更改运行时类型」选择免费 GPU。\n2. 点击「运行时 → 全部运行」，上传同目录的 `ione_colab_bundle.zip`。\n3. 完成后下载结果；确认文件保存后断开运行时。\n\n预算 $0，不购买套餐。免费 GPU 不可用时停止。数据留在私有会话，不开启共享或发布模型。Notebook 不挂载 Drive。'),
             code("import subprocess\nsubprocess.run(['nvidia-smi'], check=True)\n"),
             code(upload_cell_source(archive_hash)),
             code("import sys\nsubprocess.run([sys.executable, '-m', 'pip', 'install', '-q', '-r', str(root / 'requirements-m6-colab.txt')], check=True)\n"),
@@ -79,15 +79,45 @@ finally:
     files.download('/content/ione_results.zip')
 '''),
             md('下载完成后，菜单「运行时 → 断开连接并删除运行时」。把 `ione_results.zip` 放回项目的 `Saved/m6_runs/`，供后续核验。\n\n训练 loss 与 dev loss 用于检查训练过程；角色、事实和权限收益需要后续 Base/SFT 同条件评估。')]
+    if with_dev_eval:
+        extra = '''    # Evaluate the same frozen dev payload after successful pilot reload.
+    import hashlib
+    evaluation_packet = root / 'dev_packet'
+    (evaluation_packet / 'adapter').mkdir(parents=True)
+    payloads = {
+        'training_result.json': results / 'pilot/result.json',
+        'sft_dev_canonical.jsonl': root / 'bundle/sft_dev_canonical.jsonl',
+        'adapter/adapter_config.json': results / 'pilot/adapter/adapter_config.json',
+        'adapter/adapter_model.safetensors': results / 'pilot/adapter/adapter_model.safetensors'}
+    for name, path in payloads.items():
+        shutil.copy2(path, evaluation_packet / name)
+    hashes = {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in payloads.items()}
+    (evaluation_packet / 'eval_manifest.json').write_text(json.dumps({'files_sha256': hashes}, indent=2))
+    evaluation_command = [sys.executable, '-u', str(root / 'Tools/eval_ione_adapter.py'),
+        '--packet', str(evaluation_packet), '--output', str(results / 'dev_comparison')]
+    with (results / 'dev_evaluation.log').open('w') as log:
+        process = subprocess.Popen(evaluation_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        for line in process.stdout:
+            print(line, end=''); log.write(line); log.flush()
+        if process.wait(): raise RuntimeError('dev evaluation failed; inspect downloaded logs')
+'''
+        source = ''.join(cells[5]['source'])
+        source = source.replace("run_phase('pilot', ['--smoke-result', str(smoke_result)])",
+                                "run_phase('pilot', ['--smoke-result', str(smoke_result), '--precision', 'fp32'])")
+        source = source.replace("    print('完成。", extra + "    print('完成。")
+        cells[5]['source'] = source.splitlines(True)
+        cells[0]['source'] += ['\n本批次包含 smoke → SFT pilot → Base/SFT 开发集对照 → 统一下载。冻结测试集不参与本批次。']
+    return cells
 
 
-def package(bundle, output, smoke_result=None):
+def package(bundle, output, smoke_result=None, with_dev_eval=False):
     manifest, _ = verify_bundle(bundle)
     output = Path(output)
     if output.exists(): raise ValueError('Use a new output directory')
     root = Path(__file__).resolve().parents[1]
     source_names = ['Tools/train_ione_sft.py', 'Tools/ione_tokenizer_smoke.py',
                     'Tools/ione_data_pipeline.py', 'Tools/preflight_ione_sft.py', 'requirements-m6-colab.txt']
+    if with_dev_eval: source_names.append('Tools/eval_ione_adapter.py')
     files = {name: (root / name).read_bytes() for name in source_names}
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
     files['source_revision.json'] = json.dumps({'git_commit': commit,
@@ -115,7 +145,7 @@ def package(bundle, output, smoke_result=None):
     notebook = {'nbformat': 4, 'nbformat_minor': 5,
                 'metadata': {'kernelspec': {'display_name': 'Python 3', 'name': 'python3'},
                              'colab': {'name': 'Ione_Free_GPU_Trial.ipynb'}, 'accelerator': 'GPU'},
-                'cells': notebook_cells(digest)}
+                'cells': notebook_cells(digest, with_dev_eval)}
     (output / 'Ione_Free_GPU_Trial.ipynb').write_text(json.dumps(notebook, ensure_ascii=False, indent=2), encoding='utf-8')
     inventory = {name: hashlib.sha256(data).hexdigest() for name, data in files.items()}
     (output / 'package_manifest.json').write_text(json.dumps({'zip_sha256': digest, 'files': inventory}, indent=2))
@@ -127,5 +157,6 @@ if __name__ == '__main__':
     parser.add_argument('--bundle', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--smoke-result', type=Path)
+    parser.add_argument('--with-dev-eval', action='store_true')
     args = parser.parse_args()
-    print(json.dumps(package(args.bundle, args.output, args.smoke_result), indent=2))
+    print(json.dumps(package(args.bundle, args.output, args.smoke_result, args.with_dev_eval), indent=2))
