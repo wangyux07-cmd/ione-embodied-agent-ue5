@@ -14,7 +14,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     import torch
-    from transformers import AutoTokenizer, Qwen3Config, Qwen3ForCausalLM
+    from transformers import AutoTokenizer, Qwen3Config, Qwen3ForCausalLM, GenerationConfig
     from peft import LoraConfig, get_peft_model
     from eval_ione_adapter import paired_dev
     from test_data_pipeline import DataContractTests
@@ -25,6 +25,19 @@ def main():
                         head_dim=16, eos_token_id=tokenizer.eos_token_id, tie_word_embeddings=True)
     model = get_peft_model(Qwen3ForCausalLM(config), LoraConfig(r=8, lora_alpha=16,
                             target_modules=['q_proj', 'v_proj'], task_type='CAUSAL_LM'))
+    base = model.get_base_model()
+    base.generation_config = GenerationConfig(do_sample=True, temperature=0.6, top_k=20, top_p=0.95)
+    base.generation_config.transformers_version = '4.57.6'
+    observed_sampling = []
+    original_prepare = base._prepare_generation_config
+    legacy, _ = original_prepare(GenerationConfig(do_sample=False), use_model_defaults=None)
+    assert legacy.do_sample is True, 'The adversarial model config must reproduce the override'
+    import types
+    def traced_prepare(self, *args, **kwargs):
+        prepared, model_kwargs = original_prepare(*args, **kwargs)
+        observed_sampling.append(prepared.do_sample)
+        return prepared, model_kwargs
+    base._prepare_generation_config = types.MethodType(traced_prepare, base)
     with torch.no_grad():
         for name, parameter in model.named_parameters():
             if 'lora_B' in name: parameter.normal_(std=0.02)
@@ -40,6 +53,12 @@ def main():
     assert records[2]['prompt_sha256'] == records[3]['prompt_sha256']
     assert all(torch.equal(before[n], p.detach()) for n, p in model.named_parameters())
     assert result['training_steps'] == 0 and result['raw_responses'] == 4
+    assert len(observed_sampling) == 6 and not any(observed_sampling), observed_sampling
+    assert all(r['generation_kwargs']['use_model_defaults'] is False for r in records)
+    (args.output / 'generation_policy_test.json').write_text(json.dumps({
+        'legacy_model_default_overrides_false': legacy.do_sample,
+        'actual_generate_prepared_do_sample': observed_sampling,
+        'weight_changes': False, 'scope': 'tiny random CPU library integration'}))
     print(json.dumps(result, indent=2))
 
 

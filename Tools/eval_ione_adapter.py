@@ -11,6 +11,12 @@ from ione_data_pipeline import read_jsonl, validate_sample
 from ione_tokenizer_smoke import encode_target
 
 
+def greedy_generate(model, prompt, options):
+    # kwargs override model defaults, including Qwen's do_sample=True config.
+    return model.generate(**prompt, generation_config=options, do_sample=False,
+                          use_model_defaults=False, use_cache=True)
+
+
 def validate_dev_rows(rows):
     if not rows or any(r['kind'] != 'sft' or r['split'] != 'dev' for r in rows):
         raise ValueError('Only approved SFT dev cases belong in this diagnostic')
@@ -45,12 +51,12 @@ def paired_dev(model, tokenizer, rows, output, metadata, max_new_tokens=128):
                 with torch.inference_mode():
                     if index == 0:
                         # Warm each path; exclude from measured generation wall time.
-                        model.generate(**prompt, generation_config=GenerationConfig(do_sample=False, max_new_tokens=1,
-                            pad_token_id=tokenizer.pad_token_id, eos_token_id=tokenizer.eos_token_id), use_cache=True)
+                        greedy_generate(model, prompt, GenerationConfig(do_sample=False, max_new_tokens=1,
+                            pad_token_id=tokenizer.pad_token_id, eos_token_id=tokenizer.eos_token_id))
                     loss = float(model(**teacher, use_cache=False).loss)
                     if not math.isfinite(loss): raise RuntimeError('Non-finite dev loss')
                     sync(); started = time.perf_counter()
-                    generated = model.generate(**prompt, generation_config=options, use_cache=True)
+                    generated = greedy_generate(model, prompt, options)
                     sync(); elapsed = time.perf_counter() - started
             tokens = generated[0, prompt['input_ids'].shape[1]:].cpu().tolist()
             record = {'sample_id': row['sample_id'], 'family_id': row['family_id'], 'variant': variant,
@@ -61,6 +67,7 @@ def paired_dev(model, tokenizer, rows, output, metadata, max_new_tokens=128):
                       'target_only_loss': loss, 'supervised_tokens': encoded['target_tokens'],
                       'truncated': len(tokens) >= max_new_tokens and tokens[-1] != tokenizer.eos_token_id,
                       'quality_labels': 'pending_review', 'world_actions': 'not_executed'}
+            record['generation_kwargs'] = {'do_sample': False, 'use_model_defaults': False, 'use_cache': True}
             with (output / 'paired_raw.jsonl').open('a', encoding='utf-8') as file:
                 file.write(json.dumps(record, ensure_ascii=False) + '\n')
             trace.append(record)
@@ -68,6 +75,7 @@ def paired_dev(model, tokenizer, rows, output, metadata, max_new_tokens=128):
     summary = {'metadata': metadata, 'cases': len(rows), 'raw_responses': len(trace),
                'scope': 'development diagnostic; not frozen holdout, human scoring or UE latency',
                'do_sample': False, 'max_new_tokens': max_new_tokens, 'enable_thinking': False,
+               'use_model_defaults': False,
                'training_steps': 0, 'variants': {}}
     for variant in ('Base', 'SFT'):
         records = [r for r in trace if r['variant'] == variant]
