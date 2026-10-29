@@ -1,0 +1,7 @@
+# Keep Colab's CUDA-enabled torch; the notebook records its version and GPU smoke.
+transformers==4.57.6
+tokenizers==0.22.2
+trl==0.26.2
+peft==0.18.1
+accelerate==1.15.0
+datasets==5.0.1
