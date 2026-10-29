@@ -24,3 +24,33 @@ AGENTS.md
 *Resume*
 *resume*
 *简历*
+
+# Personal agent setup, design drafts and unused lighting experiments
+/.codex/
+/DESIGN.md
+/Content/Character/Performance2D/Relit/
+/Content/Character/Performance2D/Ione_Selected_Reference.png
+
+# Application documents, local credentials and model artifacts
+*Cover_Letter*
+*cover_letter*
+*求职*
+*招聘*
+CV.*
+CV_*
+*_CV.*
+*_CV_*
+*.docx
+*.pdf
+*.zip
+*.ipynb
+*.sqlite3
+*.sqlite3-*
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.pem
+*.key
+credentials.json
+token.json

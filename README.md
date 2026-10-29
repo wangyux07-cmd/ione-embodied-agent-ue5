@@ -1,28 +1,53 @@
 # Ione | Unreal Engine 5 NPC Agent
 
-Ione is a playable game NPC prototype set in a flooded wasteland archive. Players type to Ione in an Unreal Engine 5 dialogue window. A local Agent checks the game world and permissions, then returns a grounded reply and a matching character pose. The scene includes a hand-drawn-style background, a full-body character and an in-game dialogue panel.
+## Project
 
-![Ione answering a route question in the Unreal Engine game window](Media/ione-gameplay.png)
+Ione is an interactive NPC set in a flooded wasteland archive. Players talk to Ione through an Unreal Engine 5 dialogue interface and follow a story about recovering a missing sister's recording.
 
-## Run
+The project combines a full-body illustrated character, expressive 2D poses, a hand-drawn-style environment and an event-driven Journal. A local Agent routes dialogue into game actions. ToolGate checks world state, quest prerequisites and recording permissions before committing actions. SQLite stores each session's progress, memory and relationship state for the next visit.
 
-1. Install **Unreal Engine 5.8.4**, **Python 3** and [Ollama](https://ollama.com/). In a terminal, run `ollama pull qwen3:1.7b` and `ollama pull gemma3:4b`.
-2. From the repository root, start the local Agent bridge:
+The Python tooling supports completion-only LoRA supervised fine-tuning, Direct Preference Optimization, adapter reload checks and controlled Base/SFT/DPO evaluation. The runtime includes an optional Hugging Face dialogue worker for selecting these model variants.
+
+![Ione dialogue and quest objective in the Unreal Engine game window](Media/ione-gameplay.png)
+
+## Run Locally
+
+1. Install **Unreal Engine 5.8.4**, **Python 3.11**, [Ollama](https://ollama.com/) and **Visual Studio 2022 Build Tools** with the C++ desktop workload, Windows SDK and .NET Framework 4.8 SDK.
+
+2. Clone the repository and create a Python environment:
 
    ```powershell
-   python .\Tools\serve_ione_agent.py
+   git clone --branch codex/m8-runtime-integration https://github.com/wangyux07-cmd/ione-embodied-agent-ue5.git
+   cd ione-embodied-agent-ue5
+   py -3.11 -m venv .venv
    ```
 
-3. Open `AsterPerformanceLab.uproject` in Unreal Engine, load `L_IoneStage`, and press **Play**. Click the dialogue box, type a question, and press **Enter**.
+3. Start Ollama and download the routing models:
 
-Try `东桥还能走吗？`, `红账本是谁的？`, or `打开档案室的门`. Ione checks routes and records against game tools; opening the archive door requires consent.
+   ```powershell
+   ollama pull qwen3:1.7b
+   ollama pull gemma3:4b
+   ```
 
-Press **J** to open the Journal and **Esc** to close it. The screen uses the selected full-body illustration with 2D speaking, interruption and warning motion. Typography uses Georgia from Windows, with a built-in fallback when unavailable.
+4. Start the local Agent bridge from the repository root:
 
-The Agent bridge is in [`Tools/serve_ione_agent.py`](Tools/serve_ione_agent.py); the game runtime is in [`Plugins/AsterPerformanceRuntime/`](Plugins/AsterPerformanceRuntime/). Run `python -m pytest -q` for the Python tests.
+   ```powershell
+   .\.venv\Scripts\python.exe .\Tools\serve_ione_agent.py
+   ```
 
-Session progress is saved locally in `Saved/ione_sessions.sqlite3`. The game creates its own session and keeps its ID in `Saved/IoneClientSession.txt`; restarting restores its objective, clues and shared events. API clients can create an isolated session with `POST /session/new`, pass its `session_id` alongside `text` and `turn_id` to `POST /turn`, and resume it with `GET /session/{id}`. Requests without a session ID use the legacy session. Keep the database when restarting the bridge; back it up before a database upgrade. Unsupported schema versions fail explicitly.
+   The bridge runs at `http://127.0.0.1:8765`. The default dialogue path combines Ollama intent routing with authored tool-result replies.
 
-In the game, ask Ione to check the public archive for your sister, check a route, diagnose the relay, collect its fuse and repair it. Continue with the public evidence and the recording-specific release card. The local model proposes an intent; quest prerequisites and ToolGate validate actions, and authored dialogue reports their results. Objective and Journal update with progress. Indirect requests can need clarification. API clients can also send explicit actions through the optional `action` field, such as `find_public_lead`, `inspect_relay` or `repair_relay`.
+5. Open `AsterPerformanceLab.uproject` with Unreal Engine 5.8.4, build the C++ modules when prompted, open `Content/Maps/L_IoneStage`, and press **Play**. Click the dialogue input, type a message, and press **Enter**. Press **J** to open the Journal and **Esc** to close it.
 
-Training, the optional Base/SFT/DPO dialogue worker and runtime measurements are described in [Tools/TRAINING.md](Tools/TRAINING.md). The default game uses the local Ollama router and authored tool-result dialogue.
+   Start with: `Please look up the public dispatch index for my sister's message.` Continue by checking the route, diagnosing the relay, collecting a replacement fuse and repairing it. Follow the Journal to collect public evidence and verify the recording's release card.
+
+   Progress is stored in `Saved/ione_sessions.sqlite3`; the game keeps its session ID in `Saved/IoneClientSession.txt` and restores the session on launch.
+
+Run the Python regression tests with:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install pytest pytest-subtests
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+See [Tools/TRAINING.md](Tools/TRAINING.md) for LoRA SFT, DPO and the optional Base/SFT/DPO dialogue worker.
