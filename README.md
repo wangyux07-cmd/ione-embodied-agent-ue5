@@ -17,7 +17,7 @@ The Python tooling supports completion-only LoRA supervised fine-tuning, Direct 
 2. Clone the repository and create a Python environment:
 
    ```powershell
-   git clone --branch codex/m8-runtime-integration https://github.com/wangyux07-cmd/ione-embodied-agent-ue5.git
+   git clone https://github.com/wangyux07-cmd/ione-embodied-agent-ue5.git
    cd ione-embodied-agent-ue5
    py -3.11 -m venv .venv
    ```
