@@ -2,6 +2,8 @@
 import re
 import time
 import uuid
+import json
+from pathlib import Path
 from dataclasses import asdict
 
 from ione_agent import World, Turn, Proposal, ToolGate
@@ -34,9 +36,12 @@ REPLIES = {
 
 
 class Controller:
-    def __init__(self, store, router, localize, context_router=None):
+    def __init__(self, store, router, localize, context_router=None, dialogue_backend=None):
         self.store, self.router, self.localize = store, router, localize
         self.context_router = context_router
+        self.dialogue_backend = dialogue_backend
+        self.bible = (json.loads((Path(__file__).resolve().parents[1]/'Narrative/character_bible.json').read_text(encoding='utf-8'))
+                      if dialogue_backend else None)
 
     def turn(self, data):
         text, turn_id = data['text'], data['turn_id']
@@ -104,7 +109,33 @@ class Controller:
                     'relationship': state['relationship'], 'trace_id': uuid.uuid4().hex,
                     'model_version': 'authored' if action else source, 'state_version': version,
                     'response_path': 'authored_tool_result',
+                    'publication_status': 'pending_model' if self.dialogue_backend else 'published',
                     'timings': {'routing_ms': round((routed-started)*1000, 2)},
                     'latency_ms': round((time.perf_counter()-started)*1000, 2)}
 
-        return self.store.commit(sid, version, data, execute)
+        response=self.store.commit(sid, version, data, execute)
+        committed=time.perf_counter()
+        if self.dialogue_backend is None:return response
+        # ToolGate has already committed a real outcome. Interruption may cancel its
+        # later prose, never roll back the recorded action or repeat its side effect.
+        from ione_model_backend import dialogue_messages, publish_dialogue
+        current_version,snapshot=self.store.read(sid)
+        if current_version!=version:
+            return self.store.finalize_response(sid,version,response)
+        messages=dialogue_messages(text,snapshot,response,self.bible)
+        context_ready=time.perf_counter()
+        try:
+            generated=self.dialogue_backend.generate(messages)
+        except (OSError,ValueError,TimeoutError) as exc:
+            response={**response,'response_path':'model_transport_fallback',
+                      'model_version':self.dialogue_backend.variant,
+                      'dialogue_validation':type(exc).__name__,
+                      'model_metadata':{'training_steps':0,'generation_succeeded':False}}
+        else:
+            response=publish_dialogue(response,generated)
+        finished=time.perf_counter()
+        response['timings'].update(commit_ms=round((committed-routed)*1000,2),
+            context_ms=round((context_ready-committed)*1000,2),
+            dialogue_and_validator_ms=round((finished-context_ready)*1000,2))
+        response['latency_ms']=round((finished-started)*1000,2)
+        return self.store.finalize_response(sid,version,response)

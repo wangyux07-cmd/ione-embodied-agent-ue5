@@ -119,7 +119,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         if self.path == '/health':
-            self.respond(200, {'status': 'ready', 'model': MODEL, 'schema_version': 1})
+            backend=self.server.controller.dialogue_backend
+            self.respond(200, {'status': 'ready', 'model': MODEL, 'schema_version': 1,
+                              'dialogue_model':backend.variant if backend else 'authored'})
             return
         if self.path.startswith('/session/'):
             try:
@@ -162,14 +164,24 @@ class Handler(BaseHTTPRequestHandler):
             self.respond(503, {"error": "agent_unavailable", "detail": str(exc)})
 
 
-def make_server(port=PORT, db_path=None, router=route_plan):
+def make_server(port=PORT, db_path=None, router=route_plan, dialogue_backend=None):
     server = ThreadingHTTPServer((HOST, port), Handler)
     store = SessionStore(db_path or Path(__file__).resolve().parents[1] / 'Saved/ione_sessions.sqlite3')
     server.controller = Controller(store, router, localized_dialogue,
-                                   context_router=route_plan if router is route_plan else None)
+                                   context_router=route_plan if router is route_plan else None,
+                                   dialogue_backend=dialogue_backend)
     return server
 
 
 if __name__ == "__main__":
+    import argparse
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--dialogue-model',choices=['authored','base','sft','dpo'],default='authored')
+    parser.add_argument('--hf-url',default='http://127.0.0.1:8770')
+    args=parser.parse_args()
+    backend=None
+    if args.dialogue_model!='authored':
+        from ione_model_backend import HFHTTPBackend
+        backend=HFHTTPBackend(args.dialogue_model,args.hf_url)
     print(f"Ione Agent bridge: http://{HOST}:{PORT} (loopback only)", flush=True)
-    make_server().serve_forever()
+    make_server(dialogue_backend=backend).serve_forever()

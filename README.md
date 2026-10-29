@@ -25,4 +25,4 @@ Session progress is saved locally in `Saved/ione_sessions.sqlite3`. The game cre
 
 In the game, ask Ione to check the public archive for your sister, check a route, diagnose the relay, collect its fuse and repair it. Continue with the public evidence and the recording-specific release card. The local model proposes an intent; quest prerequisites and ToolGate validate actions, and authored dialogue reports their results. Objective and Journal update with progress. Indirect requests can need clarification. API clients can also send explicit actions through the optional `action` field, such as `find_public_lead`, `inspect_relay` or `repair_relay`.
 
-Training and paired model evaluation tools are described in [Tools/TRAINING.md](Tools/TRAINING.md). The default game uses the local Ollama router.
+Training, the optional Base/SFT/DPO dialogue worker and runtime measurements are described in [Tools/TRAINING.md](Tools/TRAINING.md). The default game uses the local Ollama router and authored tool-result dialogue.

@@ -120,3 +120,16 @@ class SessionStore:
             db.execute('INSERT INTO turns VALUES (?,?,?,?)',
                        (session_id, version, json.dumps(request), json.dumps(response)))
             return response
+
+    def finalize_response(self, session_id, version, response):
+        """Publish current dialogue after inference, without repeating committed game actions."""
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row=db.execute('SELECT version FROM sessions WHERE id=?',(session_id,)).fetchone()
+            stale=row is None or row[0]!=version
+            response={**response,'publication_status':'discarded_stale' if stale else 'published'}
+            changed=db.execute('UPDATE turns SET response=? WHERE session_id=? AND version=?',
+                               (json.dumps(response),session_id,version)).rowcount
+            if changed!=1 and not stale:raise ValueError('Missing committed turn')
+        if stale:raise StaleTurn()
+        return response

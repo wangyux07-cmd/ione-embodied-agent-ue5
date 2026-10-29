@@ -44,3 +44,23 @@ The optional CPU integration test checks two actual DPO updates, frozen referenc
 ```powershell
 python Tests/smoke_dpo_trainer_cpu.py --tokenizer LOCAL_QWEN_TOKENIZER --output NEW_TEST_OUTPUT_DIRECTORY
 ```
+
+The optional runtime worker loads one FP32 base and the verified SFT/DPO adapters. In the training Python environment, start it with the saved result files and adapter directories:
+
+```powershell
+python Tools/serve_ione_hf.py --sft-result SFT_RESULT_JSON --dpo-result DPO_RESULT_JSON --sft-adapter SFT_ADAPTER_DIRECTORY --dpo-adapter DPO_ADAPTER_DIRECTORY --device cuda
+```
+
+Weights load from the local Hugging Face cache. Add `--allow-download` to download the pinned public base. CPU inference requires explicit `--device cpu`. The worker binds to `127.0.0.1:8770`, serializes shared-adapter inference and records generation time, first-token time, queue time and token counts.
+
+Start the game bridge in a separate terminal with `python Tools/serve_ione_agent.py --dialogue-model dpo`; choose `base` or `sft` for the other variants. The default is `authored`. ToolGate commits validated actions before optional dialogue generation. The existing fact-anchor gate accepts or replaces model prose. A newer turn cancels publication of an older reply while preserving any action already committed. Raw output and fallback reasons stay in the local turn log.
+
+For a matched service comparison, run:
+
+```powershell
+python Tools/benchmark_ione_runtime.py --output NEW_OUTPUT_DIRECTORY --repeats 3
+```
+
+This sends 36 measured requests per variant after separate warmups, using fixed structured story actions and a route fixture. JSONL and CSV outputs separate model timing, Python wall time, accepted dialogue and fallbacks. UE drawing and natural-language router timing are measured separately.
+
+`Tools/package_ione_runtime_colab.py` accepts the same four artifact arguments and `--output NEW_DIRECTORY` to produce a private free-Colab notebook and upload ZIP. It runs the comparison with existing weights and performs zero training updates. The optional CPU integration check is `python Tests/smoke_hf_runtime_cpu.py --tokenizer LOCAL_QWEN_TOKENIZER --output NEW_DIRECTORY`; it uses tiny random weights to test the HTTP, adapter-selection and game-state paths.
