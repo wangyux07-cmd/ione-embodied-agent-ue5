@@ -18,6 +18,27 @@ MODELS = {
 }
 
 
+def use_native_bf16(capability, native_supported):
+    """Emulated bfloat16 on pre-Ampere GPUs is not the training default."""
+    return capability[0] >= 8 and native_supported
+
+
+def gpu_bf16():
+    import torch
+    return use_native_bf16(torch.cuda.get_device_capability(),
+                           torch.cuda.is_bf16_supported(including_emulation=False))
+
+
+def probe_logits(model, batch, position):
+    """Use identical AMP for the Trainer-wrapped and independently loaded model."""
+    import torch
+    parameter = next(model.parameters())
+    dtype = parameter.dtype
+    with torch.no_grad(), torch.autocast(device_type=parameter.device.type, dtype=dtype,
+                                         enabled=dtype in (torch.float16, torch.bfloat16)):
+        return model(**batch, use_cache=False).logits[:, position].float().cpu()
+
+
 def smoke_rows():
     """Throwaway mechanics fixtures; never used as pilot train/dev or evaluation."""
     return [{'prompt': [{'role': 'system', 'content': 'Read the calibration instrument. Reply with its displayed value.'},
@@ -75,7 +96,7 @@ def run_training(model, tokenizer, train_rows, dev_rows, output, phase, cpu=Fals
         if actual[:len(expected)] != expected or any(x != -100 for x in actual[len(expected):]):
             raise ValueError('Trainer-bound loss mask mismatch')
     model.config.use_cache = False
-    config = make_config(output, phase, bf16=not cpu and torch.cuda.is_bf16_supported(), cpu=cpu)
+    config = make_config(output, phase, bf16=not cpu and gpu_bf16(), cpu=cpu)
     trainer = SFTTrainer(model=model, args=config, processing_class=tokenizer,
                          train_dataset=Dataset.from_list(train),
                          eval_dataset=Dataset.from_list(dev) if dev else None,
@@ -100,12 +121,11 @@ def run_training(model, tokenizer, train_rows, dev_rows, output, phase, cpu=Fals
     probe = collator([train[0]])
     probe = {k: v.to(trainer.model.device) for k, v in probe.items() if k in ('input_ids', 'attention_mask')}
     trainer.model.eval()
-    with torch.no_grad():
-        # Save next-token logits at the final prompt position as a reload reference.
-        pos = train[0]['completion_mask'].index(1) - 1
-        reference = trainer.model(**probe).logits[:, pos].float().cpu()
+    # Save next-token logits at the final prompt position as a reload reference.
+    pos = train[0]['completion_mask'].index(1) - 1
+    reference = probe_logits(trainer.model, probe, pos)
     torch.save({'probe': {k: v.cpu() for k, v in probe.items()}, 'position': pos,
-                'logits': reference}, output / 'reload_probe.pt')
+                'logits': reference, 'precision': str(next(trainer.model.parameters()).dtype)}, output / 'reload_probe.pt')
     return {'metrics': metrics, 'optimizer_steps': trainer.state.global_step,
             'changed_adapter_tensors': len(changed), 'trainable_parameters': sum(p.numel() for p in trainer.model.parameters() if p.requires_grad),
             'train_tokens': sum(len(f['input_ids']) for f in train),
@@ -120,8 +140,7 @@ def reload_check(model, adapter, probe_path):
     model.eval()
     probe = torch.load(probe_path, map_location='cpu', weights_only=True)
     batch = {k: v.to(model.device) for k, v in probe['probe'].items()}
-    with torch.no_grad():
-        actual = model(**batch).logits[:, probe['position']].float().cpu()
+    actual = probe_logits(model, batch, probe['position'])
     torch.testing.assert_close(actual, probe['logits'], rtol=0.005, atol=0.005)
     return float((actual - probe['logits']).abs().max())
 
@@ -154,11 +173,13 @@ def main():
     dev = [] if args.phase == 'smoke' else [r for r in rows if r['split'] == 'dev']
     args.output.mkdir(parents=True)
     set_seed(42)
-    dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+    dtype = torch.bfloat16 if gpu_bf16() else torch.float16
     report = {'phase': args.phase, 'model': model_id, 'revision': revision, 'seed': 42,
               'scope': 'training mechanics smoke' if args.phase == 'smoke' else 'small SFT pilot; loss is not quality evidence',
               'gpu': torch.cuda.get_device_name(), 'gpu_total_bytes': torch.cuda.get_device_properties(0).total_memory,
               'dtype': str(dtype), 'cuda': torch.version.cuda,
+              'gpu_compute_capability': list(torch.cuda.get_device_capability()),
+              'native_bf16': gpu_bf16(),
               'versions': {m.__name__: m.__version__ for m in (torch, transformers, trl, peft, datasets, accelerate)},
               'runner_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
               'bundle_manifest_sha256': hashlib.sha256((args.bundle / 'manifest.json').read_bytes()).hexdigest(),
