@@ -1,16 +1,42 @@
 import json
+import hashlib
+import io
 import sys
 import tempfile
+import types
 import unittest
+from unittest.mock import patch
 import zipfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'Tools'))
-from package_ione_colab import package, notebook_cells
+from package_ione_colab import package, notebook_cells, upload_cell_source
 from train_ione_sft import smoke_rows
 
 
 class ColabPackageTests(unittest.TestCase):
+    def test_renamed_upload_extracts_verified_bytes_and_preserves_previous_run(self):
+        blob = io.BytesIO()
+        with zipfile.ZipFile(blob, 'w') as archive:
+            archive.writestr('bundle/manifest.json', '{"verified": true}')
+        data = blob.getvalue()
+        fake_colab = types.ModuleType('google.colab')
+        fake_colab.files = types.SimpleNamespace(upload=lambda: {'ione_colab_bundle (2).zip': data})
+        source = upload_cell_source(hashlib.sha256(data).hexdigest())
+        original_mkdtemp = tempfile.mkdtemp
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.dict(sys.modules, {'google.colab': fake_colab}), patch('tempfile.mkdtemp',
+                    side_effect=lambda **kw: original_mkdtemp(prefix=kw['prefix'], dir=directory)):
+                first = {}; exec(source, first)
+                second = {}; exec(source, second)
+            self.assertNotEqual(first['root'], second['root'])
+            for state in (first, second):
+                self.assertEqual((state['root'] / 'bundle/manifest.json').read_text(), '{"verified": true}')
+        fake_colab.files.upload = lambda: {'ione_colab_bundle.zip': b'wrong content'}
+        with patch.dict(sys.modules, {'google.colab': fake_colab}):
+            with self.assertRaisesRegex(AssertionError, 'hash'):
+                exec(source, {})
+
     def test_notebook_python_cells_compile(self):
         for index, cell in enumerate(notebook_cells('0' * 64)):
             if cell['cell_type'] == 'code':

@@ -15,28 +15,31 @@ from pathlib import Path
 from preflight_ione_sft import verify_bundle
 
 
+def upload_cell_source(archive_hash):
+    return f'''from google.colab import files
+from pathlib import Path
+from io import BytesIO
+import hashlib, zipfile, json, tempfile
+uploaded = files.upload()
+assert len(uploaded) == 1, '请只选择一个训练压缩包'
+upload_name, blob = next(iter(uploaded.items()))
+assert hashlib.sha256(blob).hexdigest() == '{archive_hash}', '压缩包 hash 不符'
+root = Path(tempfile.mkdtemp(prefix='ione_trial_', dir='/content'))
+with zipfile.ZipFile(BytesIO(blob)) as archive:
+    for item in archive.infolist():
+        target = (root / item.filename).resolve()
+        assert root.resolve() in target.parents and not item.is_dir(), '非法归档路径'
+    archive.extractall(root)
+print('上传包校验通过:', upload_name, '→', root)
+'''
+
+
 def notebook_cells(archive_hash):
     def md(text): return {'cell_type': 'markdown', 'metadata': {}, 'source': text.splitlines(True)}
     def code(text): return {'cell_type': 'code', 'metadata': {}, 'execution_count': None, 'outputs': [], 'source': text.splitlines(True)}
     return [md('# Ione · 免费 GPU 训练试跑\n\n1. 菜单「运行时 → 更改运行时类型」选择免费 GPU。\n2. 点击「运行时 → 全部运行」，上传同目录的 `ione_colab_bundle.zip`。\n3. 完成后下载结果；确认文件保存后断开运行时。\n\n预算 $0，不购买套餐。免费 GPU 不可用时停止。数据留在私有会话，不开启共享或发布模型。Notebook 不挂载 Drive。'),
             code("import subprocess\nsubprocess.run(['nvidia-smi'], check=True)\n"),
-            code(f'''from google.colab import files
-from pathlib import Path
-import hashlib, zipfile, json
-uploaded = files.upload()
-assert set(uploaded) == {{'ione_colab_bundle.zip'}}, '请只上传 ione_colab_bundle.zip'
-blob = uploaded['ione_colab_bundle.zip']
-assert hashlib.sha256(blob).hexdigest() == '{archive_hash}', '压缩包 hash 不符'
-root = Path('/content/ione_trial')
-assert not root.exists(), '已有一次运行，请先下载结果；使用全新运行时开始新实验'
-root.mkdir()
-with zipfile.ZipFile('ione_colab_bundle.zip') as archive:
-    for item in archive.infolist():
-        target = (root / item.filename).resolve()
-        assert root.resolve() in target.parents and not item.is_dir(), '非法归档路径'
-    archive.extractall(root)
-print('上传包校验通过')
-'''),
+            code(upload_cell_source(archive_hash)),
             code("import sys\nsubprocess.run([sys.executable, '-m', 'pip', 'install', '-q', '-r', str(root / 'requirements-m6-colab.txt')], check=True)\n"),
             code('''import torch
 assert torch.cuda.is_available(), '没有 CUDA GPU；本次停止，不购买算力'
