@@ -14,7 +14,7 @@ from eval_ione_adapter import greedy_generate
 
 def load_frozen(packet):
     cases, digest = read_cases(packet / 'eval_set_v1.jsonl')
-    freeze = json.loads((packet / 'freeze_manifest_v1.json').read_text())
+    freeze = json.loads((packet / 'freeze_manifest_v1.json').read_text(encoding='utf-8-sig'))
     bible_bytes = (packet / 'character_bible.json').read_bytes()
     if (freeze.get('status') != 'approved_frozen' or freeze.get('eval_set_sha256') != digest
             or not freeze.get('approval_reference') or len(cases) != freeze.get('case_count')
