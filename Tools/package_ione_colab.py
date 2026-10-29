@@ -47,7 +47,7 @@ print(torch.__version__, torch.version.cuda, torch.cuda.get_device_name())
 import os
 os.environ['HF_HUB_DISABLE_TELEMETRY'] = '1'
 os.environ['WANDB_DISABLED'] = 'true'
-print('开始 0.6B 三步 smoke，随后 1.7B 一轮 pilot')
+print('检查已有 smoke 证明，随后启动 1.7B 一轮 pilot')
 '''),
             code('''import shutil, time
 results = root / 'results'
@@ -62,8 +62,15 @@ def run_phase(phase, extra=()):
         if process.wait():
             raise RuntimeError(phase + ' 失败，见下载包日志；不会自动改配置或租用 GPU')
 try:
-    run_phase('smoke')
-    run_phase('pilot', ['--smoke-result', str(results / 'smoke/result.json')])
+    prior_smoke = root / 'prior_smoke_result.json'
+    if prior_smoke.exists():
+        shutil.copy2(prior_smoke, results / 'smoke_result_reused.json')
+        print('复用已通过的 0.6B smoke 结果，本次只运行 1.7B pilot')
+        smoke_result = prior_smoke
+    else:
+        run_phase('smoke')
+        smoke_result = results / 'smoke/result.json'
+    run_phase('pilot', ['--smoke-result', str(smoke_result)])
     print('完成。检查点与日志已保存；模型质量对照尚待独立评估。')
 finally:
     subprocess.run([sys.executable, '-m', 'pip', 'freeze'], stdout=(results / 'environment.txt').open('w'), check=False)
@@ -74,11 +81,10 @@ finally:
             md('下载完成后，菜单「运行时 → 断开连接并删除运行时」。把 `ione_results.zip` 放回项目的 `Saved/m6_runs/`，供后续核验。\n\n训练 loss 与 dev loss 用于检查训练过程；角色、事实和权限收益需要后续 Base/SFT 同条件评估。')]
 
 
-def package(bundle, output):
+def package(bundle, output, smoke_result=None):
     manifest, _ = verify_bundle(bundle)
     output = Path(output)
     if output.exists(): raise ValueError('Use a new output directory')
-    output.mkdir(parents=True)
     root = Path(__file__).resolve().parents[1]
     source_names = ['Tools/train_ione_sft.py', 'Tools/ione_tokenizer_smoke.py',
                     'Tools/ione_data_pipeline.py', 'Tools/preflight_ione_sft.py', 'requirements-m6-colab.txt']
@@ -93,6 +99,15 @@ def package(bundle, output):
                'source_manifest_sha256': hashlib.sha256((bundle / 'manifest.json').read_bytes()).hexdigest(),
                'heldout_sha256': manifest['heldout_sha256']}
     files['bundle/manifest.json'] = json.dumps(reduced, indent=2).encode()
+    if smoke_result is not None:
+        raw = Path(smoke_result).read_bytes()
+        proof = json.loads(raw)
+        if (proof.get('phase') != 'smoke' or proof.get('checkpoint_reload_passed') is not True
+                or proof.get('model') != 'Qwen/Qwen3-0.6B' or proof.get('optimizer_steps', 0) < 3
+                or proof.get('bundle_manifest_sha256') != hashlib.sha256(files['bundle/manifest.json']).hexdigest()):
+            raise ValueError('Prior smoke proof does not match this frozen bundle')
+        files['prior_smoke_result.json'] = raw
+    output.mkdir(parents=True)
     archive = output / 'ione_colab_bundle.zip'
     with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as zip_file:
         for name, data in files.items(): zip_file.writestr(name, data)
@@ -111,5 +126,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bundle', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--smoke-result', type=Path)
     args = parser.parse_args()
-    print(json.dumps(package(args.bundle, args.output), indent=2))
+    print(json.dumps(package(args.bundle, args.output, args.smoke_result), indent=2))

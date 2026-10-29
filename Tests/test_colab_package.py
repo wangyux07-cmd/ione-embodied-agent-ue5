@@ -15,6 +15,26 @@ from train_ione_sft import smoke_rows
 
 
 class ColabPackageTests(unittest.TestCase):
+    def test_prior_smoke_requires_passed_matching_bundle(self):
+        from test_sft_preflight import FrozenBundleTests
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); bundle = root / 'input'; bundle.mkdir()
+            fixture = FrozenBundleTests(); manifest = fixture.make_bundle(bundle)
+            manifest['heldout_sha256'] = '0' * 64; fixture.save_manifest(bundle, manifest)
+            package(bundle, root / 'first')
+            with zipfile.ZipFile(root / 'first/ione_colab_bundle.zip') as archive:
+                manifest_hash = hashlib.sha256(archive.read('bundle/manifest.json')).hexdigest()
+            proof = {'phase': 'smoke', 'model': 'Qwen/Qwen3-0.6B', 'checkpoint_reload_passed': True,
+                     'optimizer_steps': 3, 'bundle_manifest_sha256': manifest_hash}
+            proof_path = root / 'proof.json'; proof_path.write_text(json.dumps(proof))
+            inventory = package(bundle, root / 'reused', proof_path)
+            self.assertIn('prior_smoke_result.json', inventory)
+            for key, value in [('checkpoint_reload_passed', False), ('bundle_manifest_sha256', 'wrong'), ('optimizer_steps', 0)]:
+                changed = dict(proof); changed[key] = value
+                proof_path.write_text(json.dumps(changed))
+                with self.assertRaisesRegex(ValueError, 'smoke proof'):
+                    package(bundle, root / ('bad_' + key), proof_path)
+
     def test_renamed_upload_extracts_verified_bytes_and_preserves_previous_run(self):
         blob = io.BytesIO()
         with zipfile.ZipFile(blob, 'w') as archive:

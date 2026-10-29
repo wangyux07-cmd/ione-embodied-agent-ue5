@@ -12,6 +12,8 @@ Upload the generated notebook to [Colab](https://colab.research.google.com/), se
 
 The trial runs Qwen3-0.6B for three optimizer steps on independent mechanics fixtures, saves and reloads its LoRA adapter, then runs one Qwen3-1.7B epoch on the approved train split and evaluates dev loss. Both Hugging Face revisions are pinned in `train_ione_sft.py`. Loss covers assistant completions and their stop token. Base parameters stay frozen; LoRA targets Q/V with rank 8 and alpha 16.
 
+GPUs with native BF16 use BF16. On GPUs such as T4, the smoke uses FP16 and the 1.7B pilot uses FP32. Logs distinguish attempted, skipped and successful optimizer steps; non-finite loss or gradient norms stop the run. To reuse a completed smoke for the same bundle, add `--smoke-result PATH_TO_SMOKE_RESULT_JSON` when building the package.
+
 Download `ione_results.zip` before disconnecting the runtime. It contains adapters, optimizer checkpoints, configuration, loss logs, GPU details, environment versions and reload checks. Training failure also triggers a log download. Compare Base/SFT answers under a matched inference protocol to evaluate NPC quality.
 
 Run normal regression tests with `python -m pytest -q`. For the optional integration check, install `requirements-m6-preflight.txt` in a separate environment and run:

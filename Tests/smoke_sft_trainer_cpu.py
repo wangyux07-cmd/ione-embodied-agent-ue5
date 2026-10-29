@@ -14,6 +14,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--tokenizer', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--phase', choices=('smoke', 'pilot'), default='smoke')
     args = parser.parse_args()
     import torch
     from transformers import AutoTokenizer, Qwen3Config, Qwen3ForCausalLM, set_seed
@@ -29,7 +30,11 @@ def main():
     model = Qwen3ForCausalLM(config)
     base_state = {n: p.detach().clone() for n, p in model.state_dict().items()}
     rows = smoke_rows()
-    result = run_training(model, tokenizer, rows[:14], rows[14:], args.output, 'smoke', cpu=True)
+    result = run_training(model, tokenizer, rows[:14], rows[14:], args.output, args.phase, cpu=True)
+    expected_steps = 3 if args.phase == 'smoke' else 4
+    assert result['optimizer_steps'] == expected_steps
+    assert result['attempted_optimizer_steps'] == expected_steps
+    assert result['skipped_optimizer_steps'] == 0
     base = Qwen3ForCausalLM(config); base.load_state_dict(base_state)
     result['reload_max_logit_delta'] = reload_check(base, args.output / 'adapter', args.output / 'reload_probe.pt')
     result.update(scope='tiny random CPU model integration only', pretrained_weights_loaded=False,

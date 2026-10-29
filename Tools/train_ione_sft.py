@@ -29,6 +29,13 @@ def gpu_bf16():
                            torch.cuda.is_bf16_supported(including_emulation=False))
 
 
+def precision_for_phase(phase, native_bf16):
+    # A T4 pilot uses full precision to avoid FP16 range/gradient scaling failures.
+    if native_bf16:
+        return 'bf16'
+    return 'fp32' if phase == 'pilot' else 'fp16'
+
+
 def probe_logits(model, batch, position):
     """Use identical AMP for the Trainer-wrapped and independently loaded model."""
     import torch
@@ -55,7 +62,7 @@ def prepare_features(rows, tokenizer):
     return features
 
 
-def make_config(output, phase, bf16=False, cpu=False):
+def make_config(output, phase, bf16=False, cpu=False, fp32=False):
     from trl import SFTConfig
     return SFTConfig(output_dir=str(output), max_steps=3 if phase == 'smoke' else -1,
                      num_train_epochs=1, learning_rate=1e-4, per_device_train_batch_size=1,
@@ -63,7 +70,7 @@ def make_config(output, phase, bf16=False, cpu=False):
                      max_length=1536, packing=False, completion_only_loss=True,
                      dataset_kwargs={'skip_prepare_dataset': True}, remove_unused_columns=False,
                      gradient_checkpointing=True, gradient_checkpointing_kwargs={'use_reentrant': False},
-                     optim='adamw_torch', bf16=bf16, fp16=not bf16 and not cpu, use_cpu=cpu,
+                     optim='adamw_torch', bf16=bf16, fp16=not bf16 and not cpu and not fp32, use_cpu=cpu,
                      logging_steps=1, logging_nan_inf_filter=False, save_strategy='steps',
                      save_steps=3 if phase == 'smoke' else 9, save_total_limit=2,
                      eval_strategy='no', report_to='none', push_to_hub=False,
@@ -78,8 +85,16 @@ def run_training(model, tokenizer, train_rows, dev_rows, output, phase, cpu=Fals
     from transformers import TrainerCallback
     from trl import SFTTrainer
     from trl.trainer.sft_trainer import DataCollatorForLanguageModeling
+    steps = {'attempted': 0, 'skipped': 0, 'successful': 0}
 
     class FiniteLoss(TrainerCallback):
+        def on_step_end(self, args, state, control, **kwargs):
+            skipped = bool(trainer.accelerator.optimizer_step_was_skipped)
+            steps['attempted'] += 1
+            steps['skipped' if skipped else 'successful'] += 1
+            with (output / 'optimizer_steps.jsonl').open('a') as log:
+                log.write(json.dumps({'trainer_step': state.global_step, 'skipped': skipped}) + '\n')
+
         def on_log(self, args, state, control, logs=None, **kwargs):
             for key in ('loss', 'eval_loss', 'grad_norm'):
                 if logs and key in logs and not math.isfinite(float(logs[key])):
@@ -96,7 +111,9 @@ def run_training(model, tokenizer, train_rows, dev_rows, output, phase, cpu=Fals
         if actual[:len(expected)] != expected or any(x != -100 for x in actual[len(expected):]):
             raise ValueError('Trainer-bound loss mask mismatch')
     model.config.use_cache = False
-    config = make_config(output, phase, bf16=not cpu and gpu_bf16(), cpu=cpu)
+    base_dtype = next(model.parameters()).dtype
+    config = make_config(output, phase, bf16=not cpu and base_dtype == torch.bfloat16,
+                         fp32=base_dtype == torch.float32, cpu=cpu)
     trainer = SFTTrainer(model=model, args=config, processing_class=tokenizer,
                          train_dataset=Dataset.from_list(train),
                          eval_dataset=Dataset.from_list(dev) if dev else None,
@@ -107,7 +124,7 @@ def run_training(model, tokenizer, train_rows, dev_rows, output, phase, cpu=Fals
         raise ValueError('Base parameters must remain frozen')
     before = {n: p.detach().cpu().clone() for n, p in trainer.model.named_parameters() if p.requires_grad}
     result = trainer.train()
-    if not math.isfinite(result.training_loss) or trainer.state.global_step < 1:
+    if not math.isfinite(result.training_loss) or steps['successful'] < 1:
         raise RuntimeError('Training did not produce finite optimizer steps')
     changed = [n for n, p in trainer.model.named_parameters() if n in before and not torch.equal(before[n], p.detach().cpu())]
     if not changed:
@@ -126,7 +143,9 @@ def run_training(model, tokenizer, train_rows, dev_rows, output, phase, cpu=Fals
     reference = probe_logits(trainer.model, probe, pos)
     torch.save({'probe': {k: v.cpu() for k, v in probe.items()}, 'position': pos,
                 'logits': reference, 'precision': str(next(trainer.model.parameters()).dtype)}, output / 'reload_probe.pt')
-    return {'metrics': metrics, 'optimizer_steps': trainer.state.global_step,
+    return {'metrics': metrics, 'optimizer_steps': steps['successful'],
+            'attempted_optimizer_steps': steps['attempted'], 'skipped_optimizer_steps': steps['skipped'],
+            'trainer_global_step': trainer.state.global_step,
             'changed_adapter_tensors': len(changed), 'trainable_parameters': sum(p.numel() for p in trainer.model.parameters() if p.requires_grad),
             'train_tokens': sum(len(f['input_ids']) for f in train),
             'supervised_tokens': sum(sum(f['completion_mask']) for f in train),
@@ -173,11 +192,13 @@ def main():
     dev = [] if args.phase == 'smoke' else [r for r in rows if r['split'] == 'dev']
     args.output.mkdir(parents=True)
     set_seed(42)
-    dtype = torch.bfloat16 if gpu_bf16() else torch.float16
+    precision = precision_for_phase(args.phase, gpu_bf16())
+    dtype = {'bf16': torch.bfloat16, 'fp16': torch.float16, 'fp32': torch.float32}[precision]
     report = {'phase': args.phase, 'model': model_id, 'revision': revision, 'seed': 42,
               'scope': 'training mechanics smoke' if args.phase == 'smoke' else 'small SFT pilot; loss is not quality evidence',
               'gpu': torch.cuda.get_device_name(), 'gpu_total_bytes': torch.cuda.get_device_properties(0).total_memory,
               'dtype': str(dtype), 'cuda': torch.version.cuda,
+              'precision_policy': 'native bf16; otherwise FP16 smoke and FP32 pilot',
               'gpu_compute_capability': list(torch.cuda.get_device_capability()),
               'native_bf16': gpu_bf16(),
               'versions': {m.__name__: m.__version__ for m in (torch, transformers, trl, peft, datasets, accelerate)},
@@ -191,7 +212,8 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(model_id, revision=revision, trust_remote_code=False)
     report['chat_template_sha256'] = hashlib.sha256(tokenizer.chat_template.encode()).hexdigest()
     model = AutoModelForCausalLM.from_pretrained(model_id, revision=revision, dtype=dtype,
-                                               attn_implementation='sdpa', trust_remote_code=False).to('cuda')
+                                               device_map={'': 'cuda'}, low_cpu_mem_usage=True,
+                                               attn_implementation='sdpa', trust_remote_code=False)
     torch.cuda.reset_peak_memory_stats()
     started = time.perf_counter()
     report.update(run_training(model, tokenizer, train, dev, args.output, args.phase))
@@ -200,7 +222,8 @@ def main():
     del model
     gc.collect(); torch.cuda.empty_cache()
     model = AutoModelForCausalLM.from_pretrained(model_id, revision=revision, dtype=dtype,
-                                               attn_implementation='sdpa', trust_remote_code=False).to('cuda')
+                                               device_map={'': 'cuda'}, low_cpu_mem_usage=True,
+                                               attn_implementation='sdpa', trust_remote_code=False)
     report['reload_max_logit_delta'] = reload_check(model, args.output / 'adapter', args.output / 'reload_probe.pt')
     report['checkpoint_reload_passed'] = True
     (args.output / 'result.json').write_text(json.dumps(report, indent=2))
