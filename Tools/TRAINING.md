@@ -27,3 +27,20 @@ python Tests/smoke_sft_trainer_cpu.py --tokenizer LOCAL_QWEN_TOKENIZER --output 
 This integration check uses a tiny random CPU model and exercises TRL training, evaluation, adapter save and reload.
 
 For a paired development diagnostic, run `python Tools/eval_ione_adapter.py --packet EVAL_PACKET --output NEW_OUTPUT_DIRECTORY` on a CUDA GPU. The packet contains `training_result.json`, `sft_dev_canonical.jsonl`, the saved `adapter/adapter_config.json` and `adapter/adapter_model.safetensors`, plus an `eval_manifest.json` with their SHA-256 values in `files_sha256`. It generates Base/SFT replies with the same pinned FP32 model, alternating pair order and toggling its adapter. Outputs include target-only dev loss, raw replies, truncation and generation timing. Quality labels remain pending review. The diagnostic performs no training or game actions.
+
+For DPO, use approved canonical preference records and a manifest with `pairs`, `approval_reference` and their SHA-256 in `files`. Approval for batch use and individual annotation provenance are recorded separately. Run on a free CUDA GPU:
+
+```powershell
+python Tools/train_ione_dpo.py --data PREFERENCES_JSONL --manifest APPROVAL_MANIFEST --sft-adapter SFT_ADAPTER_DIRECTORY --output NEW_DPO_DIRECTORY
+python Tools/eval_ione_dpo.py --packet FROZEN_EVAL_PACKET --dpo-run NEW_DPO_DIRECTORY --output NEW_COMPARISON_DIRECTORY
+```
+
+DPO trains one FP32 epoch with learning rate `1e-5` and beta `0.1`. Policy and reference start from the same SFT adapter and share a frozen base. The reference stays fixed, and only policy LoRA weights enter the optimizer. Non-thinking prompts are explicit; sequences exceeding 1536 tokens stop before training. The saved policy is independently reloaded before evaluation.
+
+The evaluation packet contains the frozen cases, approval manifest, Character Bible, SFT training result and adapter, with file hashes in `packet_manifest.json`. SFT/DPO inference alternates pair order on the same FP32 model and records raw replies and timing. Human preference and semantic quality ratings are collected separately.
+
+The optional CPU integration test checks two actual DPO updates, frozen reference/base, policy-only optimizer, independent reload and named-adapter evaluation on a tiny random model:
+
+```powershell
+python Tests/smoke_dpo_trainer_cpu.py --tokenizer LOCAL_QWEN_TOKENIZER --output NEW_TEST_OUTPUT_DIRECTORY
+```
