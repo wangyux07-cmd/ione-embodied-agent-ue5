@@ -23,3 +23,5 @@ python Tests/smoke_sft_trainer_cpu.py --tokenizer LOCAL_QWEN_TOKENIZER --output 
 ```
 
 This integration check uses a tiny random CPU model and exercises TRL training, evaluation, adapter save and reload.
+
+For a paired development diagnostic, run `python Tools/eval_ione_adapter.py --packet EVAL_PACKET --output NEW_OUTPUT_DIRECTORY` on a CUDA GPU. The packet contains `training_result.json`, `sft_dev_canonical.jsonl`, the saved `adapter/adapter_config.json` and `adapter/adapter_model.safetensors`, plus an `eval_manifest.json` with their SHA-256 values in `files_sha256`. It generates Base/SFT replies with the same pinned FP32 model, alternating pair order and toggling its adapter. Outputs include target-only dev loss, raw replies, truncation and generation timing. Quality labels remain pending review. The diagnostic performs no training or game actions.
